@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pokemon</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-  </head>
-  <body>
+    <script src="funcoes.js"> </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+</head>
+  <body onload="consultar()">
     <header>
         <nav class="navbar navbar-expand-lg bg-light">
             <div class="container-fluid">
@@ -42,8 +44,49 @@
             </div>
         </nav>
     </header>
+
     <main>
-        <h1>Fãs de Pokemon</h1>
+        <section id="cadastro"> 
+            <div class="container">
+                <h3> Cadastro de Pokemons </h3>
+                <form>
+                    <input type="number" id="id" hidden/>
+                    <div class="mb-3">
+                        <label for="nome"> Nome </label>
+                        <input class="form-control" type="text" name="nome" id="nome"/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo"> Tipo </label>
+                        <input class="form-control" type="text" name="tipo" id="tipo"/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="poder"> Poder </label>
+                        <input class="form-control" type="text" name="poder" id="poder"/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nota"> Nota </label>
+                        <input class="form-control" type="text" name="nota" id="nota"/>
+                    </div>
+                    <button type="button" onClick="cadastrar()" class="btn btn-primary"> 
+                        Confirmar 
+                    </button>  
+                </form>
+            </div>
+        </section>
+        <section id="consulta">
+            <div class="container">
+                <table class="table">
+                    <thead>
+                        <th> Nome </th> <th> Tipo </th>
+                        <th> Poder </th> <th> Nota </th>
+                        <th> </th> <th> </th>
+                    </thead>
+                    <tbody id="conteudoTabela">
+                        <!-- preenchido automaticamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
     <footer>
         
