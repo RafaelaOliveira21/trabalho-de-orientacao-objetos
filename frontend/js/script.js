@@ -33,7 +33,7 @@ window.addEventListener('load', () => {
 
                     arma.options[arma.options.length] = option;
                 });
-        })
+        });
 
     tipoElementalList
         .then(dados => {
