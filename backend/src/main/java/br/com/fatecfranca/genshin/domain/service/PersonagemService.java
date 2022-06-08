@@ -10,15 +10,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class PersonagemService {
 
     @Autowired
     private PersonagemRepository personagemRepository;
 
-    public Page<PersonagemDto> findAll(Pageable page) {
-        return personagemRepository.findAll(page)
-                .map(PersonagemDto::of);
+    public List<PersonagemDto> findAll() {
+        return personagemRepository.findAll()
+                .stream()
+                .map(PersonagemDto::of)
+                .collect(Collectors.toList());
     }
 
     public PersonagemDto findById(Long id) {
