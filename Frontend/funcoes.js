@@ -64,7 +64,7 @@ async function consultar() {
             <td> ${dado.arma} </td>
             <td> ${dado.nota} </td> 
             <td> <i onClick='remove(${dado.id})' class='bi bi-trash'></i> </td> 
-            <td> <i onClick="atualiza(${dado.id}, '${dado.nome}', '${dado.tipo}', '${dado.poder}', '${dado.arma}', ${dado.nota})" class='bi bi-pencil'></i></td>
+            <td> <i onClick="atualiza(${dado.id}, '${dado.nome}', '${dado.tipoElemental}', '${dado.poder}', '${dado.arma}', ${dado.nota})" class='bi bi-pencil'></i></td>
         </tr>`;
     });
     // colocar a resposta no body da tabela
