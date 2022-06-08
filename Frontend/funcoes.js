@@ -1,39 +1,88 @@
-// vai requisitar uma API
+window.addEventListener('load', () => {
+    let urlTipoElemental = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
+    let urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
+    const arma = document.getElementById("armas");
+    const tipoElemental = document.getElementById("tipoElemental");
+    const armasList = fetch(urlArmas)
+        .then(response => {
+            return response.json()
+        })
+        .catch(error => {
+            alert(error)
+        });
+
+    const tipoElementalList = fetch(urlTipoElemental)
+        .then(response => {
+            return response.json()
+        })
+        .catch(error => {
+            alert(error)
+        });
+
+    armasList
+        .then(dados => {
+            dados
+                .forEach((armaAtual) => {
+                    option = new Option(
+                        JSON.stringify(armaAtual)
+                            .replace(/['"]+/g, '')
+                            .replace("LANCA", "LANÇA")
+                            .replace("_", " "),
+                        JSON.stringify(armaAtual)
+                    );
+
+                    arma.options[arma.options.length] = option;
+                });
+        })
+
+    tipoElementalList
+        .then(dados => {
+            dados
+                .forEach((tipoElementalAtual) => {
+                    option = new Option(
+                        JSON.stringify(tipoElementalAtual).replace(/['"]+/g, '').replace("_", " "),
+                        JSON.stringify(tipoElementalAtual)
+                    );
+
+                    tipoElemental.options[tipoElemental.options.length] = option;
+                });
+        });
+
+
+}, false);
+
 async function cadastrar() {
-    // recuperar os dados do usuário
     const id = document.getElementById("id").value;
     const nome = document.getElementById("nome").value;
-    const tipoElemental = document.getElementById("tipo").value;
+    const tipoElemental = document.getElementById("tipo");
     const poder = document.getElementById("poder").value;
     const nota = Number(document.getElementById("nota").value);
-    const arma = document.getElementById("arma").value;
-    let url = "https://trabalho-genshin.herokuapp.com/personagens";
+    const arma = document.getElementById("armas");
+    let urlBase = "https://trabalho-genshin.herokuapp.com/personagens";
     let dado;
-    let metodo; // vai conter POST ou PUT
+    let metodo;
 
-    if (id) { // vai atualizar
+    if (id) {
         metodo = 'PUT';
-        url += `/${id}`;
+        urlBase += `/${id}`;
         dado = {
             nome, tipoElemental, poder, arma, nota
         };
     }
-    else { // cadastrar
+    else {
         metodo = 'POST';
         dado = {
             nome, tipoElemental, poder, arma, nota
         };
     }
-    // criar o dado para enviar
 
-    // chamar ou consumir a API utilizando fetch
-    await fetch(url, {
+    await fetch(urlBase, {
         method: metodo,
         body: JSON.stringify(dado),
         headers: { "Content-Type": "application/json; charset=UTF-8" }
     })
         .then(resposta => {
-            alert('Cadastro foi realizado com sucesso')
+            alert('Cadastro realizado com sucesso')
         })
         .catch(error => {
             alert(error)
@@ -43,16 +92,14 @@ async function cadastrar() {
 }
 
 async function consultar() {
-    // consome a API e recupera os personagens
     let dados = await fetch('https://trabalho-genshin.herokuapp.com/personagens')
         .then(response => {
-            return response.json() // atribui os dados em json para dados
+            return response.json()
         })
         .catch(error => {
             alert(error)
         });
-    // percorrer a variável dados
-    // vamos criar uma variável result para concatenar resposta
+
     let resposta = '';
     dados.map(dado => {
         resposta += `
@@ -67,22 +114,18 @@ async function consultar() {
             <td> <i onClick="atualiza(${dado.id}, '${dado.nome}', '${dado.tipoElemental}', '${dado.poder}', '${dado.arma}', ${dado.nota})" class='bi bi-pencil'></i></td>
         </tr>`;
     });
-    // colocar a resposta no body da tabela
+
     document.getElementById("conteudoTabela").innerHTML = resposta;
 }
 
-// remove um pokemon do banco de dados
-// quem chamar a função remove pode fazer outra ação antes de
-// receber resposta
 async function remove(id) {
     let confirma = confirm(`Confirma exclusão do personagem? `);
 
-    if (confirma) { // confirma é true
-        // chama a api -> é síncrona (aguardamos o retorna do servidor)
+    if (confirma) {
         await fetch(`https://trabalho-genshin.herokuapp.com/personagens/${id}`, {
             method: 'DELETE'
         })
-            .then(response => { // quando o servidor retornou
+            .then(response => {
                 alert(`Personagem foi removido com sucesso`)
                 consultar()
             })
@@ -93,7 +136,7 @@ async function remove(id) {
 
 }
 
-function atualiza(id, nome, tipoElemental, poder,arma, nota) {
+function atualiza(id, nome, tipoElemental, poder, arma, nota) {
     document.getElementById("id").value = id;
     document.getElementById("nome").value = nome;
     document.getElementById("tipo").value = tipoElemental;
