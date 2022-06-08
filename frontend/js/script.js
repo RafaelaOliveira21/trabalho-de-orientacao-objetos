@@ -158,7 +158,7 @@ function atualiza(id, nome, tipoElemental, poder, arma, nota) {
     const armasList = armas.querySelectorAll("option");
     armasList
         .forEach((armaAtual, index) => {
-            if (armaAtual.innerText == arma) {
+            if (armaAtual.innerText.replace(" ", "_").replace("LANÇA", "LANCA") == arma) {
                 armas.selectedIndex = index;
             }
         });
@@ -167,7 +167,7 @@ function atualiza(id, nome, tipoElemental, poder, arma, nota) {
     const tipoElementalList = tipoElementalOption.querySelectorAll('option');
     tipoElementalList
         .forEach((tipoElementalAtual, index) => {
-            if (tipoElementalAtual.innerText == tipoElemental) {
+            if (tipoElementalAtual.innerText === tipoElemental) {
                 tipoElementalOption.selectedIndex = index;
             }
         });
