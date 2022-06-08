@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: ${APP_PROFILE:test}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    out-of-order: true
+    locations: classpath:db/migration
+  jpa:
+    database: POSTGRESQL
+    open-in-view: false
