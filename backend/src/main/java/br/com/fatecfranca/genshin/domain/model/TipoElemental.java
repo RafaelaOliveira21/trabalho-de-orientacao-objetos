@@ -2,6 +2,8 @@ package br.com.fatecfranca.genshin.domain.model;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public enum TipoElemental {
 
@@ -14,6 +16,10 @@ public enum TipoElemental {
     CRYO("Gelo");
 
     TipoElemental(String descricao) {
+    }
+
+    public static List<TipoElemental> getAll() {
+        return List.of(TipoElemental.values());
     }
 
 }

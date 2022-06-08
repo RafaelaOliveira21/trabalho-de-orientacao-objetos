@@ -2,6 +2,8 @@ package br.com.fatecfranca.genshin.domain.model;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public enum TipoArma {
 
@@ -12,6 +14,10 @@ public enum TipoArma {
     CATALISADOR("Catalisador/Livro");
 
     TipoArma(String descricao) {
+    }
+
+    public static List<TipoArma> getAll() {
+        return List.of(TipoArma.values());
     }
 
 }
