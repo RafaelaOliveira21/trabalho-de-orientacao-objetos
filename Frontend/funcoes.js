@@ -3,28 +3,31 @@ async function cadastrar(){
     // recuperar os dados do usuário
     let id = document.getElementById("id").value
     let nome = document.getElementById("nome").value
-    let tipo = document.getElementById("tipo").value
+    let tipoElemental = document.getElementById("tipo").value
     let poder = document.getElementById("poder").value
     let nota = Number(document.getElementById("nota").value)
+    let arma = document.getElementById("arma").value
+    let url = "https://trabalho-genshin.herokuapp.com/personagens"
     let dado
     let metodo // vai conter POST ou PUT
     
     if (id) { // vai atualizar
         metodo = 'PUT'
+        url += `/${id}`
         dado = {
-            id, nome, tipo, poder, nota
+            nome, tipoElemental, poder, arma, nota
         }
     }
     else { // cadastrar
         metodo = 'POST'
         dado = {
-            nome, tipo, poder, nota
+            nome, tipoElemental, poder, arma, nota
         }
     }
     // criar o dado para enviar
     
     // chamar ou consumir a API utilizando fetch
-    await fetch('https://trabalho-genshin.herokuapp.com/personagens', {
+    await fetch(url, {
         method: metodo,
         body: JSON.stringify(dado),
         headers: {"Content-Type": "application/json; charset=UTF-8"}
@@ -39,7 +42,7 @@ async function cadastrar(){
 }
 
 async function consultar(){
-    // consome a API e recupera os pokemons
+    // consome a API e recupera os personagens
     let dados = await fetch('https://trabalho-genshin.herokuapp.com/personagens')
     .then( response => {
         return response.json() // atribui os dados em json para dados
@@ -61,14 +64,14 @@ async function consultar(){
 // quem chamar a função remove pode fazer outra ação antes de
 // receber resposta
 async function remove(id){
-    let confirma = confirm(`Confirma exclusão do pokemon? `)
+    let confirma = confirm(`Confirma exclusão do personagem? `)
     if (confirma){ // confirma é true
         // chama a api -> é síncrona (aguardamos o retorna do servidor)
         await fetch(`https://trabalho-genshin.herokuapp.com/personagens/${id}`, {
             method:'DELETE'
         })
         .then (response => { // quando o servidor retornou
-            alert(`Pokemon foi removido com sucesso`)
+            alert(`Personagem foi removido com sucesso`)
             consultar()
         })
         .catch( error => { // houve erro na comunicação com servidor
