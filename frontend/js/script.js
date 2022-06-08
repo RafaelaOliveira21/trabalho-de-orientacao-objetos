@@ -91,7 +91,7 @@ async function cadastrar() {
                 alert('Cadastro realizado com sucesso!');
             } else if (resposta.status == 400) {
                 alert('Preencha todos os campos!');
-            } else if(resposta.status == 500) {
+            } else if (resposta.status == 500) {
                 alert('Erro no servidor!');
             }
         })
@@ -112,19 +112,20 @@ async function consultar() {
         });
 
     let resposta = '';
-    dados.map(dado => {
-        resposta += `
-        <tr>
-            <td> ${dado.id} </td> 
-            <td> ${dado.nome} </td> 
-            <td> ${dado.tipoElemental} </td>
-            <td> ${dado.poder} </td>
-            <td> ${dado.arma} </td>
-            <td> ${dado.nota} </td> 
-            <td> <i onClick='remove(${dado.id})' class='bi bi-trash'></i> </td> 
-            <td> <i onClick="atualiza(${dado.id}, '${dado.nome}', '${dado.tipoElemental}', '${dado.poder}', '${dado.arma}', ${dado.nota})" class='bi bi-pencil'></i></td>
-        </tr>`;
-    });
+    dados
+        .map(dado => {
+            resposta += `
+                <tr>
+                    <td> ${dado.id} </td> 
+                    <td> ${dado.nome} </td> 
+                    <td> ${dado.tipoElemental} </td>
+                    <td> ${dado.poder} </td>
+                    <td> ${dado.arma.replace("LANCA", "LANÇA").replace("_", " ")} </td>
+                    <td> ${dado.nota} </td> 
+                    <td> <i onClick='remove(${dado.id})' class='bi bi-trash'></i> </td> 
+                    <td> <i onClick="atualiza(${dado.id}, '${dado.nome}', '${dado.tipoElemental}', '${dado.poder}', '${dado.arma}', ${dado.nota})" class='bi bi-pencil'></i></td>
+                </tr>`;
+        });
 
     document.getElementById("conteudoTabela").innerHTML = resposta;
 }
