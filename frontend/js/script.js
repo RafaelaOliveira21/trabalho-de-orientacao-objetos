@@ -54,10 +54,12 @@ window.addEventListener('load', () => {
 async function cadastrar() {
     const id = document.getElementById("id").value;
     const nome = document.getElementById("nome").value;
-    const tipoElemental = document.getElementById("tipo");
     const poder = document.getElementById("poder").value;
     const nota = Number(document.getElementById("nota").value);
-    const arma = document.getElementById("armas");
+    const armaOption = document.getElementById("armas");
+    const tipoElementalOption = document.getElementById("tipoElemental");
+    const arma = armaOption.options[armaOption.selectedIndex].value.replace(/['"]+/g, '');
+    const tipoElemental = tipoElementalOption.options[tipoElementalOption.selectedIndex].value.replace(/['"]+/g, '');
     let urlBase = "https://trabalho-genshin.herokuapp.com/personagens";
     let dado;
     let metodo;
@@ -82,10 +84,19 @@ async function cadastrar() {
         headers: { "Content-Type": "application/json; charset=UTF-8" }
     })
         .then(resposta => {
-            alert('Cadastro realizado com sucesso')
+            if (resposta.status == 200) {
+                alert('Atualização realizado com sucesso!');
+            }
+            if (resposta.status == 201) {
+                alert('Cadastro realizado com sucesso!');
+            } else if(resposta.status == 400) {
+                alert('Preencha todos os campos!');
+            } else {
+                alert('Erro no servidor!');
+            }
         })
         .catch(error => {
-            alert(error)
+            alert(error);
         });
 
     consultar();
