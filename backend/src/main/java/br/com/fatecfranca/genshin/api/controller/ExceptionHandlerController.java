@@ -4,14 +4,10 @@ import br.com.fatecfranca.genshin.api.exception.Message;
 import br.com.fatecfranca.genshin.api.exception.MessageType;
 import br.com.fatecfranca.genshin.domain.exception.PersonagemInexistenteException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,7 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,50 +23,35 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
-    @Autowired
-    private MessageSource messageSource;
-
     public static final String MSG_ERRO_GENERICA_USUARIO_FINAL = "Ocorreu um erro interno inesperado no sistema. " +
             "Tente novamente e se o problema persistir, entre em contato com o administrador do sistema.";
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
                                                                   HttpStatus status, WebRequest request) {
-        return handleValidationInternal(ex, headers, status, request, ex.getBindingResult());
-    }
 
-    private ResponseEntity<Object> handleValidationInternal(Exception ex, HttpHeaders headers, HttpStatus status,
-                                                            WebRequest request, BindingResult bindingResult) {
         MessageType messageType = MessageType.DADOS_INVALIDOS;
         String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
 
-        List<Message.Objects> messageObjects = bindingResult
-                .getAllErrors()
+        BindingResult bindingResult = ex.getBindingResult();
+
+        List<Message.Field> messageFields = bindingResult
+                .getFieldErrors()
                 .stream()
-                .map(objectError -> {
-                    String message = messageSource.getMessage(objectError, LocaleContextHolder.getLocale());
-
-                    String name = objectError.getObjectName();
-
-                    if (objectError instanceof FieldError) {
-                        name = ((FieldError) objectError).getField();
-                    }
-
-                    return Message.Objects
-                            .builder()
-                            .name(name)
-                            .userMessage(message)
-                            .build();
-                })
+                .map(fieldError -> Message
+                        .Field
+                        .builder()
+                        .name(fieldError.getField())
+                        .message(fieldError.getDefaultMessage())
+                        .build()
+                )
                 .collect(Collectors.toList());
 
-        Message message = createProblemBuilder(status, messageType, detail)
-                .userMessage(detail)
-                .objects(messageObjects)
+        Message message = createMessage(status, messageType, detail)
+                .fields(messageFields)
                 .build();
 
         return handleExceptionInternal(ex, message, headers, status, request);
-
     }
 
     @ExceptionHandler(PersonagemInexistenteException.class)
@@ -80,7 +61,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         String detail = ex.getMessage();
 
         Message message = createProblemBuilder(status, messageType, detail)
-                .userMessage(detail)
+                .message(detail)
                 .build();
 
         return handleExceptionInternal(ex, message, new HttpHeaders(), status, request);
@@ -96,7 +77,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         log.error(ex.getMessage(), ex);
 
         Message message = createProblemBuilder(status, messageType, detail)
-                .userMessage(detail)
+                .message(detail)
                 .build();
 
         return handleExceptionInternal(ex, message, new HttpHeaders(), status, request);
@@ -111,7 +92,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         String detail = String.format("O recurso '%s', que você tentou acessar, é inexistente.", ex.getRequestURL());
 
         Message message = createProblemBuilder(status, messageType, detail)
-                .userMessage(MSG_ERRO_GENERICA_USUARIO_FINAL)
+                .message(MSG_ERRO_GENERICA_USUARIO_FINAL)
                 .build();
 
         return handleExceptionInternal(ex, message, headers, status, request);
@@ -124,18 +105,18 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         if (body == null) {
             body = Message
                     .builder()
-                    .timestamp(OffsetDateTime.now())
+                    .timestamp(LocalDateTime.now())
                     .title(status.getReasonPhrase())
                     .status(status.value())
-                    .userMessage(MSG_ERRO_GENERICA_USUARIO_FINAL)
+                    .message(MSG_ERRO_GENERICA_USUARIO_FINAL)
                     .build();
         } else if (body instanceof String) {
             body = Message
                     .builder()
-                    .timestamp(OffsetDateTime.now())
+                    .timestamp(LocalDateTime.now())
                     .title((String) body)
                     .status(status.value())
-                    .userMessage(MSG_ERRO_GENERICA_USUARIO_FINAL)
+                    .message(MSG_ERRO_GENERICA_USUARIO_FINAL)
                     .build();
         }
 
@@ -146,11 +127,20 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
     private Message.MessageBuilder createProblemBuilder(HttpStatus status, MessageType messageType, String detail) {
         return Message
                 .builder()
-                .timestamp(OffsetDateTime.now())
+                .timestamp(LocalDateTime.now())
+                .status(status.value())
+                .type(messageType.getUri())
+                .title(messageType.getTitle());
+    }
+
+    private Message.MessageBuilder createMessage(HttpStatus status, MessageType messageType, String message) {
+        return Message
+                .builder()
+                .message(message)
                 .status(status.value())
                 .type(messageType.getUri())
                 .title(messageType.getTitle())
-                .detail(detail);
+                .timestamp(LocalDateTime.now());
     }
 
 }

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -14,20 +14,19 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Message {
 
-    private Integer status;
-    private OffsetDateTime timestamp;
     private String type;
     private String title;
-    private String detail;
-    private String userMessage;
-    private List<Objects> objects;
+    private String message;
+    private Integer status;
+    private LocalDateTime timestamp;
+    private List<Field> fields;
 
     @Getter
     @Builder
-    public static class Objects {
+    public static class Field {
 
         private String name;
-        private String userMessage;
+        private String message;
 
     }
 
