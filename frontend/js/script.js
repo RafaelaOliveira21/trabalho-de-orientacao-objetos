@@ -89,9 +89,9 @@ async function cadastrar() {
             }
             if (resposta.status == 201) {
                 alert('Cadastro realizado com sucesso!');
-            } else if(resposta.status == 400) {
+            } else if (resposta.status == 400) {
                 alert('Preencha todos os campos!');
-            } else {
+            } else if(resposta.status == 500) {
                 alert('Erro no servidor!');
             }
         })
@@ -150,8 +150,26 @@ async function remove(id) {
 function atualiza(id, nome, tipoElemental, poder, arma, nota) {
     document.getElementById("id").value = id;
     document.getElementById("nome").value = nome;
-    document.getElementById("tipo").value = tipoElemental;
     document.getElementById("poder").value = poder;
-    document.getElementById("arma").value = arma;
     document.getElementById("nota").value = nota;
+
+    const armas = document.getElementById("armas");
+    const armasList = armas.querySelectorAll("option");
+    armasList
+        .forEach((armaAtual, index) => {
+            if (armaAtual.innerText == arma) {
+                armas.selectedIndex = index;
+            }
+        });
+
+    const tipoElementalOption = document.getElementById("tipoElemental");
+    const tipoElementalList = tipoElementalOption.querySelectorAll('option');
+    tipoElementalList
+        .forEach((tipoElementalAtual, index) => {
+            if (tipoElementalAtual.innerText == tipoElemental) {
+                tipoElementalOption.selectedIndex = index;
+            }
+        });
+
+
 }
