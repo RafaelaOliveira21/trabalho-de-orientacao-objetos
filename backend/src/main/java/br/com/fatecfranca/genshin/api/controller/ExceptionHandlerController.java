@@ -4,14 +4,10 @@ import br.com.fatecfranca.genshin.api.exception.Message;
 import br.com.fatecfranca.genshin.api.exception.MessageType;
 import br.com.fatecfranca.genshin.domain.exception.PersonagemInexistenteException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,16 +16,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
-
-    @Autowired
-    private MessageSource messageSource;
 
     public static final String MSG_ERRO_GENERICA_USUARIO_FINAL = "Ocorreu um erro interno inesperado no sistema. " +
             "Tente novamente e se o problema persistir, entre em contato com o administrador do sistema.";
@@ -46,16 +38,13 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         List<Message.Field> messageFields = bindingResult
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> {
-                    String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
-
-                    return Message
-                            .Field
-                            .builder()
-                            .name(fieldError.getField())
-                            .message(fieldError.getDefaultMessage())
-                            .build();
-                })
+                .map(fieldError -> Message
+                        .Field
+                        .builder()
+                        .name(fieldError.getField())
+                        .message(fieldError.getDefaultMessage())
+                        .build()
+                )
                 .collect(Collectors.toList());
 
         Message message = createMessage(status, messageType, detail)
@@ -63,40 +52,6 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
                 .build();
 
         return handleExceptionInternal(ex, message, headers, status, request);
-    }
-
-    private ResponseEntity<Object> handleValidationInternal(Exception ex, HttpHeaders headers, HttpStatus status,
-                                                            WebRequest request, BindingResult bindingResult) {
-        MessageType messageType = MessageType.DADOS_INVALIDOS;
-        String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
-
-        List<Message.Field> messageFields = bindingResult
-                .getAllErrors()
-                .stream()
-                .map(objectError -> {
-                    String message = messageSource.getMessage(objectError, LocaleContextHolder.getLocale());
-
-                    String name = objectError.getObjectName();
-
-                    if (objectError instanceof FieldError) {
-                        name = ((FieldError) objectError).getField();
-                    }
-
-                    return Message.Field
-                            .builder()
-                            .name(name)
-                            .message(message)
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        Message message = createProblemBuilder(status, messageType, detail)
-                .message(detail)
-                .fields(messageFields)
-                .build();
-
-        return handleExceptionInternal(ex, message, headers, status, request);
-
     }
 
     @ExceptionHandler(PersonagemInexistenteException.class)
