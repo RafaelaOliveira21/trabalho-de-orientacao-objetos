@@ -8,6 +8,7 @@ async function cadastrar(){
     let nota = Number(document.getElementById("nota").value)
     let dado
     let metodo // vai conter POST ou PUT
+    
     if (id) { // vai atualizar
         metodo = 'PUT'
         dado = {
@@ -23,7 +24,7 @@ async function cadastrar(){
     // criar o dado para enviar
     
     // chamar ou consumir a API utilizando fetch
-    await fetch('http://localhost:8080/pokemon', {
+    await fetch('https://trabalho-genshin.herokuapp.com/personagens', {
         method: metodo,
         body: JSON.stringify(dado),
         headers: {"Content-Type": "application/json; charset=UTF-8"}
@@ -39,7 +40,7 @@ async function cadastrar(){
 
 async function consultar(){
     // consome a API e recupera os pokemons
-    let dados = await fetch('http://localhost:8080/pokemon')
+    let dados = await fetch('https://trabalho-genshin.herokuapp.com/personagens')
     .then( response => {
         return response.json() // atribui os dados em json para dados
     })  
@@ -63,7 +64,7 @@ async function remove(id){
     let confirma = confirm(`Confirma exclusão do pokemon? `)
     if (confirma){ // confirma é true
         // chama a api -> é síncrona (aguardamos o retorna do servidor)
-        await fetch(`http://localhost:8080/pokemon/${id}`, {
+        await fetch(`https://trabalho-genshin.herokuapp.com/personagens/${id}`, {
             method:'DELETE'
         })
         .then (response => { // quando o servidor retornou
