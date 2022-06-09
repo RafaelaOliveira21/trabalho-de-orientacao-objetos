@@ -1,4 +1,4 @@
-import { Method } from "../model/Method.js";
+import { Method } from "../enums/Method.js";
 import PagePersonagem from "../model/PagePersonagem.js";
 import Personagem from "../model/Personagem.js";
 

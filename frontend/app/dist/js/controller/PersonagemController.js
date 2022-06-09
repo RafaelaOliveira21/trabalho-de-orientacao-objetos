@@ -1,4 +1,4 @@
-import { Method } from "../model/Method.js";
+import { Method } from "../enums/Method.js";
 import Personagem from "../model/Personagem.js";
 export default class PersonagemController {
     _url;
