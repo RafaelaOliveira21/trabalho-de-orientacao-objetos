@@ -41,11 +41,12 @@ export default class PersonagemController {
     }
     async findAll() {
         this.preencherCampos();
-        const personagens = await fetch(this._url)
+        const personagens = await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
             .then((response) => response.json())
             .catch((error) => alert(error));
         let response = "";
         personagens
+            .content
             .map((personagem) => (response += `
             <tr>
                 <td class="text-center"> ${personagem.id} </td> 

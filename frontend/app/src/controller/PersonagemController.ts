@@ -1,3 +1,4 @@
+import PagePersonagem from "../model/PagePersonagem.js";
 import Personagem from "../model/Personagem.js";
 
 export default class PersonagemController {
@@ -58,13 +59,13 @@ export default class PersonagemController {
 
     public async findAll(): Promise<void> {
         this.preencherCampos();
-        const personagens: Array<Personagem> = await fetch(this._url)
+        const personagens: PagePersonagem = await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert(error));
 
         let response: string = "";
         personagens
-            // .content
+            .content
             .map(
                 (personagem: Personagem): string =>
                     (response += `
