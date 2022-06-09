@@ -49,14 +49,12 @@ export default class PersonagemController {
     }
 
     public async findPersonagens(): Promise<PagePersonagem> {
-        return await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
+        return await fetch(`${this.getUrl()}?page=0&size=10&sort=id,asc`)
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert(error));
     }
 
     public async findAll(): Promise<void> {
-        this.preencherCampos();
-
         const personagens: PagePersonagem = await this.findPersonagens();
         let response: string = "";
         personagens
@@ -89,30 +87,19 @@ export default class PersonagemController {
         const tipoElemental = this.removerAspas(
             this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value
         );
-        let personagem: Personagem, metodo: string;
+        let personagem: Personagem;
 
-        if (this._idInput.value) {
-            metodo = Method.PUT;
-            this._url += `/${this._idInput.value}`;
-            personagem = new Personagem(
-                Number(this._idInput.value),
-                this._nomeInput.value,
-                tipoElemental,
-                arma,
-                this._poderInput.value,
-                Number(this._notaInput.value)
-            );
-        } else {
-            metodo = Method.POST;
-            personagem = new Personagem(
-                null,
-                this._nomeInput.value,
-                tipoElemental,
-                arma,
-                this._poderInput.value,
-                Number(this._notaInput.value)
-            );
-        }
+        const id: number | null = Number(this._idInput.value);
+        const metodo = id ? Method.PUT : Method.POST;
+        this._url = id ? `${this.getUrl()}/${id}` : this.getUrl();
+        personagem = new Personagem(
+            id,
+            this._nomeInput.value,
+            tipoElemental,
+            arma,
+            this._poderInput.value,
+            Number(this._notaInput.value)
+        );
 
         await fetch(this._url, {
             method: metodo,
@@ -174,10 +161,10 @@ export default class PersonagemController {
         );
 
         if (confirmar) {
-            await fetch(`${this._url}/${id}`, {
+            await fetch(`${this.getUrl()}/${id}`, {
                 method: Method.DELETE,
             })
-                .then((resposta: Response): void => {
+                .then((response: Response): void => {
                     alert(`Personagem foi removido com sucesso`);
                     this.findAll();
                 })
@@ -195,8 +182,11 @@ export default class PersonagemController {
         return texto.replace(/['"]+/g, "");
     }
 
+    private getUrl(): string {
+        return "https://trabalho-genshin.herokuapp.com/personagens";
+    }
+
     private preencherCampos(): void {
-        this._url = "https://trabalho-genshin.herokuapp.com/personagens";
         this._urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
         this._urlTiposElementais = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
         this._idInput = <HTMLInputElement>document.getElementById("id");

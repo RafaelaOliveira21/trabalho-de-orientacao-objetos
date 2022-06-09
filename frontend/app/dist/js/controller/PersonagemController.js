@@ -35,12 +35,11 @@ export default class PersonagemController {
             .catch((error) => alert(error));
     }
     async findPersonagens() {
-        return await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
+        return await fetch(`${this.getUrl()}?page=0&size=10&sort=id,asc`)
             .then((response) => response.json())
             .catch((error) => alert(error));
     }
     async findAll() {
-        this.preencherCampos();
         const personagens = await this.findPersonagens();
         let response = "";
         personagens
@@ -63,16 +62,11 @@ export default class PersonagemController {
         this.preencherCampos();
         const arma = this.removerAspas(this._armasSelect.options[this._armasSelect.selectedIndex].value);
         const tipoElemental = this.removerAspas(this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value);
-        let personagem, metodo;
-        if (this._idInput.value) {
-            metodo = Method.PUT;
-            this._url += `/${this._idInput.value}`;
-            personagem = new Personagem(Number(this._idInput.value), this._nomeInput.value, tipoElemental, arma, this._poderInput.value, Number(this._notaInput.value));
-        }
-        else {
-            metodo = Method.POST;
-            personagem = new Personagem(null, this._nomeInput.value, tipoElemental, arma, this._poderInput.value, Number(this._notaInput.value));
-        }
+        let personagem;
+        const id = Number(this._idInput.value);
+        const metodo = id ? Method.PUT : Method.POST;
+        this._url = id ? `${this.getUrl()}/${id}` : this.getUrl();
+        personagem = new Personagem(id, this._nomeInput.value, tipoElemental, arma, this._poderInput.value, Number(this._notaInput.value));
         await fetch(this._url, {
             method: metodo,
             body: Personagem.fromJson(personagem),
@@ -121,10 +115,10 @@ export default class PersonagemController {
     async delete(id) {
         const confirmar = confirm(`Confirmar exclusão do personagem de id ${id}?`);
         if (confirmar) {
-            await fetch(`${this._url}/${id}`, {
+            await fetch(`${this.getUrl()}/${id}`, {
                 method: Method.DELETE,
             })
-                .then((resposta) => {
+                .then((response) => {
                 alert(`Personagem foi removido com sucesso`);
                 this.findAll();
             })
@@ -137,8 +131,10 @@ export default class PersonagemController {
     removerAspas(texto) {
         return texto.replace(/['"]+/g, "");
     }
+    getUrl() {
+        return "https://trabalho-genshin.herokuapp.com/personagens";
+    }
     preencherCampos() {
-        this._url = "https://trabalho-genshin.herokuapp.com/personagens";
         this._urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
         this._urlTiposElementais = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
         this._idInput = document.getElementById("id");
