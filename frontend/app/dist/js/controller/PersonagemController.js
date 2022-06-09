@@ -10,34 +10,26 @@ export default class PersonagemController {
     _armasSelect;
     _tiposElementaisSelect;
     _corpoTabela;
-    _armasList;
-    _tipoElementalList;
     constructor() {
         this.preencherCampos();
-        this._armasList = fetch(this._urlArmas)
+        fetch(this._urlArmas)
             .then((response) => response.json())
-            .catch((error) => alert(error));
-        this._armasList.then((armas) => {
+            .then((armas) => {
             armas.forEach((arma) => {
-                const option = new Option(JSON.stringify(arma)
-                    .replace(/['"]+/g, "")
-                    .replace("LANCA", "LANÇA")
-                    .replace("_", " "), JSON.stringify(arma));
-                this._armasSelect.options[this._armasSelect.options.length] =
-                    option;
+                const option = new Option(this.removerAspas(this.formatarNomeArma(arma)), arma);
+                this._armasSelect.options[this._armasSelect.options.length] = option;
             });
-        });
-        this._tipoElementalList = fetch(this._urlTiposElementais)
-            .then((response) => response.json())
+        })
             .catch((error) => alert(error));
-        this._tipoElementalList.then((tiposElementais) => {
+        fetch(this._urlTiposElementais)
+            .then((response) => response.json())
+            .then((tiposElementais) => {
             tiposElementais.forEach((tipoElemental) => {
-                const option = new Option(JSON.stringify(tipoElemental)
-                    .replace(/['"]+/g, "")
-                    .replace("_", " "), JSON.stringify(tipoElemental));
+                const option = new Option(this.removerAspas(tipoElemental), tipoElemental);
                 this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = option;
             });
-        });
+        })
+            .catch((error) => alert(error));
     }
     async findAll() {
         this.preencherCampos();
@@ -45,17 +37,13 @@ export default class PersonagemController {
             .then((response) => response.json())
             .catch((error) => alert(error));
         let response = "";
-        personagens
-            .content
-            .map((personagem) => (response += `
+        personagens.content.map((personagem) => (response += `
             <tr>
                 <td class="text-center"> ${personagem.id} </td> 
                 <td class="text-center"> ${personagem.nome} </td> 
                 <td class="text-center"> ${personagem.tipoElemental} </td>
                 <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${personagem.arma
-            .replace("LANCA", "LANÇA")
-            .replace("_", " ")} </td>
+                <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
                 <td class="text-center"> ${personagem.nota} </td> 
                 <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
                 <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
@@ -65,8 +53,8 @@ export default class PersonagemController {
     }
     async save() {
         this.preencherCampos();
-        const arma = this._armasSelect.options[this._armasSelect.selectedIndex].value.replace(/['"]+/g, "");
-        const tipoElemental = this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value.replace(/['"]+/g, "");
+        const arma = this.removerAspas(this._armasSelect.options[this._armasSelect.selectedIndex].value);
+        const tipoElemental = this.removerAspas(this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value);
         let personagem, metodo;
         if (this._idInput.value) {
             metodo = "PUT";
@@ -132,6 +120,12 @@ export default class PersonagemController {
             })
                 .catch((error) => alert(`Problema na remoção: ${error}`));
         }
+    }
+    formatarNomeArma(arma) {
+        return arma.replace("LANCA", "LANÇA").replace("_", " ");
+    }
+    removerAspas(texto) {
+        return texto.replace(/['"]+/g, "");
     }
     preencherCampos() {
         this._url = "https://trabalho-genshin.herokuapp.com/personagens";

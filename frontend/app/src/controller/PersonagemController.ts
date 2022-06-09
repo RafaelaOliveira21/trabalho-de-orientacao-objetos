@@ -12,76 +12,68 @@ export default class PersonagemController {
     private _armasSelect: HTMLSelectElement;
     private _tiposElementaisSelect: HTMLSelectElement;
     private _corpoTabela: HTMLElement;
-    private _armasList: Promise<Array<string>>;
-    private _tipoElementalList: Promise<Array<string>>;
 
     constructor() {
         this.preencherCampos();
 
-        this._armasList = fetch(this._urlArmas)
-            .then((response): Promise<any> => response.json())
-            .catch((error) => alert(error));
-
-        this._armasList.then((armas: Array<string>): void => {
-            armas.forEach((arma: string): void => {
-                const option = new Option(
-                    JSON.stringify(arma)
-                        .replace(/['"]+/g, "")
-                        .replace("LANCA", "LANÇA")
-                        .replace("_", " "),
-                    JSON.stringify(arma)
-                );
-
-                this._armasSelect.options[this._armasSelect.options.length] =
-                    option;
-            });
-        });
-
-        this._tipoElementalList = fetch(this._urlTiposElementais)
+        fetch(this._urlArmas)
             .then((response: Response): Promise<any> => response.json())
-            .catch((error: Error) => alert(error));
+            .then((armas: Array<string>): void => {
+                armas.forEach((arma: string): void => {
+                    const option: HTMLOptionElement = new Option(
+                        this.removerAspas(this.formatarNomeArma(arma)),
+                        arma
+                    );
 
-        this._tipoElementalList.then((tiposElementais: Array<string>): void => {
-            tiposElementais.forEach((tipoElemental: string): void => {
-                const option = new Option(
-                    JSON.stringify(tipoElemental)
-                        .replace(/['"]+/g, "")
-                        .replace("_", " "),
-                    JSON.stringify(tipoElemental)
-                );
+                    this._armasSelect.options[
+                        this._armasSelect.options.length
+                    ] = option;
+                });
+            })
+            .catch((error: Error): void => alert(error));
 
-                this._tiposElementaisSelect.options[
-                    this._tiposElementaisSelect.options.length
-                ] = option;
-            });
-        });
+        fetch(this._urlTiposElementais)
+            .then((response: Response): Promise<any> => response.json())
+            .then((tiposElementais: Array<string>): void => {
+                tiposElementais.forEach((tipoElemental: string): void => {
+                    const option: HTMLOptionElement = new Option(
+                        this.removerAspas(tipoElemental),
+                        tipoElemental
+                    );
+
+                    this._tiposElementaisSelect.options[
+                        this._tiposElementaisSelect.options.length
+                    ] = option;
+                });
+            })
+            .catch((error: Error): void => alert(error));
     }
 
     public async findAll(): Promise<void> {
         this.preencherCampos();
-        const personagens: PagePersonagem = await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
+        const personagens: PagePersonagem = await fetch(
+            `${this._url}?page=0&size=10&sort=id,asc`
+        )
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert(error));
 
         let response: string = "";
-        personagens
-            .content
-            .map(
-                (personagem: Personagem): string =>
-                    (response += `
+        personagens.content.map(
+            (personagem: Personagem): string =>
+                (response += `
             <tr>
                 <td class="text-center"> ${personagem.id} </td> 
                 <td class="text-center"> ${personagem.nome} </td> 
                 <td class="text-center"> ${personagem.tipoElemental} </td>
                 <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${personagem.arma
-                    .replace("LANCA", "LANÇA")
-                    .replace("_", " ")} </td>
+                <td class="text-center"> ${this.formatarNomeArma(
+                    personagem.arma
+                )} </td>
                 <td class="text-center"> ${personagem.nota} </td> 
                 <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
                 <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
             </tr>`)
-            );
+        );
 
         this._corpoTabela.innerHTML = response;
 
@@ -90,12 +82,14 @@ export default class PersonagemController {
 
     public async save(): Promise<void> {
         this.preencherCampos();
-        const arma = this._armasSelect.options[
-            this._armasSelect.selectedIndex
-        ].value.replace(/['"]+/g, "");
-        const tipoElemental = this._tiposElementaisSelect.options[
-            this._tiposElementaisSelect.selectedIndex
-        ].value.replace(/['"]+/g, "");
+        const arma = this.removerAspas(
+            this._armasSelect.options[this._armasSelect.selectedIndex].value
+        );
+        const tipoElemental = this.removerAspas(
+            this._tiposElementaisSelect.options[
+                this._tiposElementaisSelect.selectedIndex
+            ].value
+        );
         let personagem: Personagem, metodo: string;
 
         if (this._idInput.value) {
@@ -193,6 +187,14 @@ export default class PersonagemController {
                     alert(`Problema na remoção: ${error}`)
                 );
         }
+    }
+
+    private formatarNomeArma(arma: string): string {
+        return arma.replace("LANCA", "LANÇA").replace("_", " ");
+    }
+
+    private removerAspas(texto: string): string {
+        return texto.replace(/['"]+/g, "");
     }
 
     private preencherCampos(): void {
