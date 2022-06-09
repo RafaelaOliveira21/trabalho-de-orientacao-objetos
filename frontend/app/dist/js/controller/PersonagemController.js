@@ -1,3 +1,4 @@
+import { Method } from "../model/Method.js";
 import Personagem from "../model/Personagem.js";
 export default class PersonagemController {
     _url;
@@ -64,12 +65,12 @@ export default class PersonagemController {
         const tipoElemental = this.removerAspas(this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value);
         let personagem, metodo;
         if (this._idInput.value) {
-            metodo = "PUT";
+            metodo = Method.PUT;
             this._url += `/${this._idInput.value}`;
             personagem = new Personagem(Number(this._idInput.value), this._nomeInput.value, tipoElemental, arma, this._poderInput.value, Number(this._notaInput.value));
         }
         else {
-            metodo = "POST";
+            metodo = Method.POST;
             personagem = new Personagem(null, this._nomeInput.value, tipoElemental, arma, this._poderInput.value, Number(this._notaInput.value));
         }
         await fetch(this._url, {
@@ -121,7 +122,7 @@ export default class PersonagemController {
         const confirmar = confirm(`Confirmar exclusão do personagem de id ${id}?`);
         if (confirmar) {
             await fetch(`${this._url}/${id}`, {
-                method: "DELETE",
+                method: Method.DELETE,
             })
                 .then((resposta) => {
                 alert(`Personagem foi removido com sucesso`);

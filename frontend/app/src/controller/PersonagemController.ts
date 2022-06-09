@@ -1,3 +1,4 @@
+import { Method } from "../model/Method.js";
 import PagePersonagem from "../model/PagePersonagem.js";
 import Personagem from "../model/Personagem.js";
 
@@ -91,7 +92,7 @@ export default class PersonagemController {
         let personagem: Personagem, metodo: string;
 
         if (this._idInput.value) {
-            metodo = "PUT";
+            metodo = Method.PUT;
             this._url += `/${this._idInput.value}`;
             personagem = new Personagem(
                 Number(this._idInput.value),
@@ -102,7 +103,7 @@ export default class PersonagemController {
                 Number(this._notaInput.value)
             );
         } else {
-            metodo = "POST";
+            metodo = Method.POST;
             personagem = new Personagem(
                 null,
                 this._nomeInput.value,
@@ -174,7 +175,7 @@ export default class PersonagemController {
 
         if (confirmar) {
             await fetch(`${this._url}/${id}`, {
-                method: "DELETE",
+                method: Method.DELETE,
             })
                 .then((resposta: Response): void => {
                     alert(`Personagem foi removido com sucesso`);
