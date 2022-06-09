@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
 </head>
 
-<body onload="consultar()">
+<body>
     <header>
-        <nav class="navbar navbar-expand-lg bg-light">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.html"> Genshin Impact </a>
 
@@ -28,13 +28,8 @@
                             <a class="nav-link active" aria-current="page" href="index.html"> Home </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="genshin-impact.html"> Personagens </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="comprar.html"> Comprar </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="sobre.html"> Sobre </a>
+                            <a class="nav-link" aria-current="page" href="genshin-impact.html"> Cadastrar Personagem
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -44,7 +39,7 @@
 
     <main>
         <section id="cadastro">
-            <div class="container">
+            <div class="container mt-4">
                 <h3> Cadastro de Personagens </h3>
                 <form>
                     <input type="number" id="id" hidden />
@@ -70,37 +65,44 @@
                     </div>
                     <div class="mb-3">
                         <label for="nota"> Nota </label>
-                        <input class="form-control" type="text" name="nota" id="nota" />
+                        <input class="form-control" type="number" name="nota" id="nota" />
                     </div>
 
 
-                    <button type="button" onClick="cadastrar()" class="btn btn-primary">
+                    <button type="button" id="cadastrar" class="btn btn-primary">
                         Confirmar
+                    </button>
+
+                    <button type="button" id="limpar" class="btn btn-warning">
+                        Limpar Campos
                     </button>
 
                 </form>
             </div>
         </section>
 
-        <section id="consulta">
-            <div class="container">
-                <table class="table">
-                    <thead>
-                        <th> id </th>
-                        <th> Nome </th>
-                        <th> Tipo Elemental</th>
-                        <th> Poder </th>
-                        <th> Arma </th>
-                        <th> Nota </th>
-                        <th> Excluir </th>
-                        <th> Editar </th>
-                    </thead>
-                    <tbody id="conteudoTabela">
-                        <!-- preenchido automaticamente -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        <div class="container mt-4">
+            <table class="table table-striped table-bordered" id="tabela">
+                <thead>
+                    <th class="text-center" scope="col"> ID </th>
+                    <th class="text-center" scope="col"> Nome </th>
+                    <th class="text-center" scope="col"> Tipo Elemental</th>
+                    <th class="text-center" scope="col"> Poder </th>
+                    <th class="text-center" scope="col"> Arma </th>
+                    <th class="text-center" scope="col"> Nota </th>
+                    <th class="text-center" scope="col"> Editar </th>
+                    <th class="text-center" scope="col"> Excluir </th>
+                </thead>
+                <tbody id="conteudoTabela">
+                    <!-- preenchido automaticamente -->
+                </tbody>
+            </table>
+
+            <!-- <ul class="pagination float-end"> -->
+            <!-- <li class="page-item"><button class="page-link">Anterior</button></li> -->
+            <!-- <li class="page-item"><button class="page-link">Próxima</button></li> -->
+            <!-- </ul> -->
+        </div>
 
     </main>
 
@@ -111,15 +113,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
         crossorigin="anonymous"> </script>
-
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js"
         integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk"
         crossorigin="anonymous"> </script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js"
         integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy"
         crossorigin="anonymous"> </script>
-    <script src="js/script.js"> </script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="js/app.js" type="module"> </script>
 
 </body>
 

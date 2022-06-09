@@ -6,6 +6,8 @@ import br.com.fatecfranca.genshin.domain.model.Personagem;
 import br.com.fatecfranca.genshin.domain.repository.PersonagemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,11 +19,9 @@ public class PersonagemService {
     @Autowired
     private PersonagemRepository personagemRepository;
 
-    public List<PersonagemDto> findAll() {
-        return personagemRepository.findAll()
-                .stream()
-                .map(PersonagemDto::of)
-                .collect(Collectors.toList());
+    public Page<PersonagemDto> findAll(Pageable pageable) {
+        return personagemRepository.findAll(pageable)
+                .map(PersonagemDto::of);
     }
 
     public PersonagemDto findById(Long id) {
