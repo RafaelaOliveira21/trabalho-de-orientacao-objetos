@@ -11,6 +11,8 @@ export default class PersonagemController {
     _armasSelect;
     _tiposElementaisSelect;
     _corpoTabela;
+    _pageSize;
+    _filterInput;
     constructor() {
         this.preencherCampos();
         fetch(this._urlArmas)
@@ -34,27 +36,26 @@ export default class PersonagemController {
         })
             .catch((error) => alert(error));
     }
-    async findPersonagens() {
-        return await fetch(`${this.getUrl()}?page=0&size=10&sort=id,asc`)
+    async findPersonagens(page, pageSize) {
+        return await fetch(`${this.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
             .then((response) => response.json())
-            .catch((error) => alert(error));
+            .catch((error) => alert("Erro: " + error));
     }
-    async findAll() {
-        const personagens = await this.findPersonagens();
+    async findAll(page, pageSize) {
+        pageSize = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
+        const personagens = await (await this.findPersonagens(page, pageSize));
         let response = "";
-        personagens
-            .content
-            .map((personagem) => (response += `
-                    <tr>
-                        <td class="text-center"> ${personagem.id} </td> 
-                        <td class="text-center"> ${personagem.nome} </td> 
-                        <td class="text-center"> ${personagem.tipoElemental} </td>
-                        <td class="text-center"> ${personagem.poder} </td>
-                        <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
-                        <td class="text-center"> ${personagem.nota} </td> 
-                        <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
-                        <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
-                    </tr>`));
+        if (this._filterInput.value) {
+            personagens
+                .content
+                .filter((personagem) => this.filter(personagem, this._filterInput.value))
+                .map((personagem) => response += this.preencherTabela(personagem));
+        }
+        else {
+            personagens
+                .content
+                .map((personagem) => response += this.preencherTabela(personagem));
+        }
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
     }
@@ -87,7 +88,7 @@ export default class PersonagemController {
                     alert("Erro no servidor!");
                     break;
             }
-            this.findAll();
+            this.findAll(0, 10);
             this.limparCampos();
         })
             .catch((error) => {
@@ -136,6 +137,20 @@ export default class PersonagemController {
     getUrl() {
         return "https://trabalho-genshin.herokuapp.com/personagens";
     }
+    preencherTabela(personagem) {
+        return `
+            <tr>
+                <td class="text-center"> ${personagem.id} </td> 
+                <td class="text-center"> ${personagem.nome} </td> 
+                <td class="text-center"> ${personagem.tipoElemental} </td>
+                <td class="text-center"> ${personagem.poder} </td>
+                <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
+                <td class="text-center"> ${personagem.nota} </td> 
+                <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
+                <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
+            </tr>
+            `;
+    }
     preencherCampos() {
         this._urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
         this._urlTiposElementais = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
@@ -146,6 +161,8 @@ export default class PersonagemController {
         this._armasSelect = document.getElementById("armas");
         this._tiposElementaisSelect = document.getElementById("tipoElemental");
         this._corpoTabela = document.getElementById("conteudoTabela");
+        this._pageSize = document.getElementById("pageSize");
+        this._filterInput = document.getElementById("filter");
     }
     limparCampos() {
         this._idInput.value = "";
@@ -156,9 +173,18 @@ export default class PersonagemController {
         this._tiposElementaisSelect.selectedIndex = 0;
     }
     adicionarEventos() {
+        this._pageSize.addEventListener("change", (event) => {
+            event.preventDefault();
+            this.findAll(0, Number(this._pageSize.value));
+        });
+        this._filterInput.addEventListener("keyup", (event) => {
+            event.preventDefault();
+            console.log(this._filterInput.value);
+            this.findAll(0, Number(this._pageSize.value));
+        });
         const table = document.querySelectorAll("#conteudoTabela > tr");
         table
-            .forEach((tr, index) => {
+            .forEach((tr) => {
             const tdId = tr.querySelector("td:nth-child(1)");
             const tdNome = tr.querySelector("td:nth-child(2)");
             const tdTipoElemental = tr.querySelector("td:nth-child(3)");
@@ -176,6 +202,14 @@ export default class PersonagemController {
                 this.update(tdId.innerText, tdNome.innerText, tdTipoElemental.innerText, tdPoder.innerText, tdArma.innerText, tdNota.innerText);
             });
         });
+    }
+    filter(personagem, valor) {
+        return personagem.id === Number(valor)
+            || personagem.arma.toLowerCase().includes(valor)
+            || personagem.nome.toLowerCase().includes(valor)
+            || personagem.tipoElemental.toLowerCase().includes(valor)
+            || personagem.poder.toLowerCase().includes(valor)
+            || personagem.nota === Number(valor);
     }
 }
 //# sourceMappingURL=PersonagemController.js.map

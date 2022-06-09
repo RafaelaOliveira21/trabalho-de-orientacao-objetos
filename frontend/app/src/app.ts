@@ -7,8 +7,6 @@ window.addEventListener(
     (event) => {
         event.preventDefault();
         personagemControlle.findAll();
-      const teste =  personagemControlle.findPersonagens();
-      teste.then(data => console.log(data.content));
     },
     false
 );

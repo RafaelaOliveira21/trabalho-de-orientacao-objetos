@@ -13,6 +13,8 @@ export default class PersonagemController {
     private _armasSelect: HTMLSelectElement;
     private _tiposElementaisSelect: HTMLSelectElement;
     private _corpoTabela: HTMLElement;
+    private _pageSize: HTMLSelectElement;
+    private _filterInput: HTMLInputElement;
 
     constructor() {
         this.preencherCampos();
@@ -48,32 +50,28 @@ export default class PersonagemController {
             .catch((error: Error): void => alert(error));
     }
 
-    public async findPersonagens(): Promise<PagePersonagem> {
-        return await fetch(`${this.getUrl()}?page=0&size=10&sort=id,asc`)
+    public async findPersonagens(page?: number, pageSize?: number): Promise<PagePersonagem> {
+        return await fetch(`${this.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
             .then((response: Response): Promise<any> => response.json())
-            .catch((error) => alert(error));
+            .catch((error) => alert("Erro: " + error));
     }
 
-    public async findAll(): Promise<void> {
-        const personagens: PagePersonagem = await this.findPersonagens();
+    public async findAll(page?: number, pageSize?: number): Promise<void> {
+        pageSize = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
+
+        const personagens: PagePersonagem = await (await this.findPersonagens(page, pageSize));
         let response: string = "";
-        personagens
-            .content
-            .map(
-                (personagem: Personagem): string =>
-                (response += `
-                    <tr>
-                        <td class="text-center"> ${personagem.id} </td> 
-                        <td class="text-center"> ${personagem.nome} </td> 
-                        <td class="text-center"> ${personagem.tipoElemental} </td>
-                        <td class="text-center"> ${personagem.poder} </td>
-                        <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
-                        <td class="text-center"> ${personagem.nota} </td> 
-                        <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
-                        <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
-                    </tr>`
-                )
-            );
+
+        if (this._filterInput.value) {
+            personagens
+                .content
+                .filter((personagem: Personagem): boolean => this.filter(personagem, this._filterInput.value))
+                .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
+        } else {
+            personagens
+                .content
+                .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
+        }
 
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
@@ -122,7 +120,7 @@ export default class PersonagemController {
                         break;
                 }
 
-                this.findAll();
+                this.findAll(0, 10);
                 this.limparCampos();
             })
             .catch((error: Error): void => {
@@ -191,6 +189,21 @@ export default class PersonagemController {
         return "https://trabalho-genshin.herokuapp.com/personagens";
     }
 
+    private preencherTabela(personagem: Personagem): string {
+        return `
+            <tr>
+                <td class="text-center"> ${personagem.id} </td> 
+                <td class="text-center"> ${personagem.nome} </td> 
+                <td class="text-center"> ${personagem.tipoElemental} </td>
+                <td class="text-center"> ${personagem.poder} </td>
+                <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
+                <td class="text-center"> ${personagem.nota} </td> 
+                <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
+                <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
+            </tr>
+            `;
+    }
+
     private preencherCampos(): void {
         this._urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
         this._urlTiposElementais = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
@@ -201,6 +214,8 @@ export default class PersonagemController {
         this._armasSelect = <HTMLSelectElement>document.getElementById("armas");
         this._tiposElementaisSelect = <HTMLSelectElement>document.getElementById("tipoElemental");
         this._corpoTabela = <HTMLElement>document.getElementById("conteudoTabela");
+        this._pageSize = <HTMLSelectElement>document.getElementById("pageSize");
+        this._filterInput = <HTMLInputElement>document.getElementById("filter");
     }
 
     public limparCampos(): void {
@@ -213,10 +228,21 @@ export default class PersonagemController {
     }
 
     private adicionarEventos(): void {
+        this._pageSize.addEventListener("change", (event: Event): void => {
+            event.preventDefault();
+            this.findAll(0, Number(this._pageSize.value));
+        });
+
+        this._filterInput.addEventListener("keyup", (event: Event): void => {
+            event.preventDefault();
+            // BUG: ao digitar o filtro, está sendo feito mais de uma requisição por vez(a cada tecla digitada) e está dando erro.
+            console.log(this._filterInput.value);
+            this.findAll(0, Number(this._pageSize.value));
+        });
         const table: NodeListOf<HTMLTableRowElement> = <NodeListOf<HTMLTableRowElement>>document.querySelectorAll("#conteudoTabela > tr");
 
         table
-            .forEach((tr, index) => {
+            .forEach((tr: HTMLTableRowElement): void => {
                 const tdId: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(1)");
                 const tdNome: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(2)");
                 const tdTipoElemental: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(3)");
@@ -226,12 +252,12 @@ export default class PersonagemController {
                 const buttonUpdate: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7)");
                 const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(8)");
 
-                buttonDelete.addEventListener("click", (event) => {
+                buttonDelete.addEventListener("click", (event: Event) => {
                     event.preventDefault();
                     this.delete(Number(tdId.innerText));
                 });
 
-                buttonUpdate.addEventListener("click", (event) => {
+                buttonUpdate.addEventListener("click", (event: Event) => {
                     event.preventDefault();
                     this.update(
                         tdId.innerText,
@@ -243,5 +269,14 @@ export default class PersonagemController {
                     );
                 });
             });
+    }
+
+    private filter(personagem: Personagem, valor: string): boolean {
+        return personagem.id === Number(valor)
+            || personagem.arma.toLowerCase().includes(valor)
+            || personagem.nome.toLowerCase().includes(valor)
+            || personagem.tipoElemental.toLowerCase().includes(valor)
+            || personagem.poder.toLowerCase().includes(valor)
+            || personagem.nota === Number(valor);
     }
 }
