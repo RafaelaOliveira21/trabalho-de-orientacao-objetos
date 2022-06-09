@@ -15,7 +15,8 @@ export default class PersonagemController {
         fetch(this._urlArmas)
             .then((response) => response.json())
             .then((armas) => {
-            armas.forEach((arma) => {
+            armas
+                .forEach((arma) => {
                 const option = new Option(this.removerAspas(this.formatarNomeArma(arma)), arma);
                 this._armasSelect.options[this._armasSelect.options.length] = option;
             });
@@ -24,30 +25,36 @@ export default class PersonagemController {
         fetch(this._urlTiposElementais)
             .then((response) => response.json())
             .then((tiposElementais) => {
-            tiposElementais.forEach((tipoElemental) => {
+            tiposElementais
+                .forEach((tipoElemental) => {
                 const option = new Option(this.removerAspas(tipoElemental), tipoElemental);
                 this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = option;
             });
         })
             .catch((error) => alert(error));
     }
-    async findAll() {
-        this.preencherCampos();
-        const personagens = await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
+    async findPersonagens() {
+        return await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
             .then((response) => response.json())
             .catch((error) => alert(error));
+    }
+    async findAll() {
+        this.preencherCampos();
+        const personagens = await this.findPersonagens();
         let response = "";
-        personagens.content.map((personagem) => (response += `
-            <tr>
-                <td class="text-center"> ${personagem.id} </td> 
-                <td class="text-center"> ${personagem.nome} </td> 
-                <td class="text-center"> ${personagem.tipoElemental} </td>
-                <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
-                <td class="text-center"> ${personagem.nota} </td> 
-                <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
-                <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
-            </tr>`));
+        personagens
+            .content
+            .map((personagem) => (response += `
+                    <tr>
+                        <td class="text-center"> ${personagem.id} </td> 
+                        <td class="text-center"> ${personagem.nome} </td> 
+                        <td class="text-center"> ${personagem.tipoElemental} </td>
+                        <td class="text-center"> ${personagem.poder} </td>
+                        <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
+                        <td class="text-center"> ${personagem.nota} </td> 
+                        <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
+                        <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
+                    </tr>`));
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
     }
@@ -96,13 +103,15 @@ export default class PersonagemController {
         this._poderInput.value = poder.toString();
         this._notaInput.value = nota.toString();
         const armasList = document.querySelectorAll("#armas > option");
-        armasList.forEach((armaAtual, index) => {
+        armasList
+            .forEach((armaAtual, index) => {
             if (armaAtual.innerText == arma) {
                 this._armasSelect.selectedIndex = index;
             }
         });
         const tiposElementais = this._tiposElementaisSelect.querySelectorAll("option");
-        tiposElementais.forEach((tipoElementalAtual, index) => {
+        tiposElementais
+            .forEach((tipoElementalAtual, index) => {
             if (tipoElementalAtual.innerText === tipoElemental) {
                 this._tiposElementaisSelect.selectedIndex = index;
             }
@@ -130,15 +139,14 @@ export default class PersonagemController {
     preencherCampos() {
         this._url = "https://trabalho-genshin.herokuapp.com/personagens";
         this._urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
-        this._urlTiposElementais =
-            "https://trabalho-genshin.herokuapp.com/tipo-elemental";
+        this._urlTiposElementais = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
         this._idInput = document.getElementById("id");
         this._nomeInput = document.getElementById("nome");
         this._notaInput = document.getElementById("nota");
         this._poderInput = document.getElementById("poder");
         this._armasSelect = document.getElementById("armas");
-        this._tiposElementaisSelect = (document.getElementById("tipoElemental"));
-        this._corpoTabela = (document.getElementById("conteudoTabela"));
+        this._tiposElementaisSelect = document.getElementById("tipoElemental");
+        this._corpoTabela = document.getElementById("conteudoTabela");
     }
     limparCampos() {
         this._idInput.value = "";
@@ -150,15 +158,16 @@ export default class PersonagemController {
     }
     adicionarEventos() {
         const table = document.querySelectorAll("#conteudoTabela > tr");
-        table.forEach((tr, index) => {
-            const tdId = (tr.querySelector("td:nth-child(1)"));
-            const tdNome = (tr.querySelector("td:nth-child(2)"));
+        table
+            .forEach((tr, index) => {
+            const tdId = tr.querySelector("td:nth-child(1)");
+            const tdNome = tr.querySelector("td:nth-child(2)");
             const tdTipoElemental = tr.querySelector("td:nth-child(3)");
-            const tdPoder = (tr.querySelector("td:nth-child(4)"));
-            const tdArma = (tr.querySelector("td:nth-child(5)"));
-            const tdNota = (tr.querySelector("td:nth-child(6)"));
-            const buttonUpdate = (tr.querySelector("td:nth-child(7)"));
-            const buttonDelete = (tr.querySelector("td:nth-child(8)"));
+            const tdPoder = tr.querySelector("td:nth-child(4)");
+            const tdArma = tr.querySelector("td:nth-child(5)");
+            const tdNota = tr.querySelector("td:nth-child(6)");
+            const buttonUpdate = tr.querySelector("td:nth-child(7)");
+            const buttonDelete = tr.querySelector("td:nth-child(8)");
             buttonDelete.addEventListener("click", (event) => {
                 event.preventDefault();
                 this.delete(Number(tdId.innerText));

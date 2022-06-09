@@ -7,6 +7,8 @@ window.addEventListener(
     (event) => {
         event.preventDefault();
         personagemControlle.findAll();
+      const teste =  personagemControlle.findPersonagens();
+      teste.then(data => console.log(data.content));
     },
     false
 );
@@ -25,3 +27,30 @@ buttonAtualizar.addEventListener("click", (event) => {
     event.preventDefault();
     personagemControlle.limparCampos();
 });
+
+// ---------------------------------------
+// function populateList() {
+//     console.log('rodando a função')
+// }
+
+// populateList();
+
+const state = {
+    page: 1,
+    perPage: 5,
+    totalPages: 5
+}
+
+const controls = {
+    next() {
+        state.page++;
+
+        // if()
+    },
+    prev() {
+
+    },
+    goTo() {
+
+    }
+}

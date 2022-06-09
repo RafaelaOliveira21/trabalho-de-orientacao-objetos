@@ -19,64 +19,64 @@ export default class PersonagemController {
         fetch(this._urlArmas)
             .then((response: Response): Promise<any> => response.json())
             .then((armas: Array<string>): void => {
-                armas.forEach((arma: string): void => {
-                    const option: HTMLOptionElement = new Option(
-                        this.removerAspas(this.formatarNomeArma(arma)),
-                        arma
-                    );
+                armas
+                    .forEach((arma: string): void => {
+                        const option: HTMLOptionElement = new Option(
+                            this.removerAspas(this.formatarNomeArma(arma)),
+                            arma
+                        );
 
-                    this._armasSelect.options[
-                        this._armasSelect.options.length
-                    ] = option;
-                });
+                        this._armasSelect.options[this._armasSelect.options.length] = option;
+                    });
             })
             .catch((error: Error): void => alert(error));
 
         fetch(this._urlTiposElementais)
             .then((response: Response): Promise<any> => response.json())
             .then((tiposElementais: Array<string>): void => {
-                tiposElementais.forEach((tipoElemental: string): void => {
-                    const option: HTMLOptionElement = new Option(
-                        this.removerAspas(tipoElemental),
-                        tipoElemental
-                    );
+                tiposElementais
+                    .forEach((tipoElemental: string): void => {
+                        const option: HTMLOptionElement = new Option(
+                            this.removerAspas(tipoElemental),
+                            tipoElemental
+                        );
 
-                    this._tiposElementaisSelect.options[
-                        this._tiposElementaisSelect.options.length
-                    ] = option;
-                });
+                        this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = option;
+                    });
             })
             .catch((error: Error): void => alert(error));
     }
 
-    public async findAll(): Promise<void> {
-        this.preencherCampos();
-        const personagens: PagePersonagem = await fetch(
-            `${this._url}?page=0&size=10&sort=id,asc`
-        )
+    public async findPersonagens(): Promise<PagePersonagem> {
+        return await fetch(`${this._url}?page=0&size=10&sort=id,asc`)
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert(error));
+    }
 
+    public async findAll(): Promise<void> {
+        this.preencherCampos();
+
+        const personagens: PagePersonagem = await this.findPersonagens();
         let response: string = "";
-        personagens.content.map(
-            (personagem: Personagem): string =>
+        personagens
+            .content
+            .map(
+                (personagem: Personagem): string =>
                 (response += `
-            <tr>
-                <td class="text-center"> ${personagem.id} </td> 
-                <td class="text-center"> ${personagem.nome} </td> 
-                <td class="text-center"> ${personagem.tipoElemental} </td>
-                <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${this.formatarNomeArma(
-                    personagem.arma
-                )} </td>
-                <td class="text-center"> ${personagem.nota} </td> 
-                <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
-                <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
-            </tr>`)
-        );
+                    <tr>
+                        <td class="text-center"> ${personagem.id} </td> 
+                        <td class="text-center"> ${personagem.nome} </td> 
+                        <td class="text-center"> ${personagem.tipoElemental} </td>
+                        <td class="text-center"> ${personagem.poder} </td>
+                        <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
+                        <td class="text-center"> ${personagem.nota} </td> 
+                        <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
+                        <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
+                    </tr>`
+                )
+            );
 
         this._corpoTabela.innerHTML = response;
-
         this.adicionarEventos();
     }
 
@@ -86,9 +86,7 @@ export default class PersonagemController {
             this._armasSelect.options[this._armasSelect.selectedIndex].value
         );
         const tipoElemental = this.removerAspas(
-            this._tiposElementaisSelect.options[
-                this._tiposElementaisSelect.selectedIndex
-            ].value
+            this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value
         );
         let personagem: Personagem, metodo: string;
 
@@ -152,22 +150,21 @@ export default class PersonagemController {
         this._poderInput.value = poder.toString();
         this._notaInput.value = nota.toString();
 
-        const armasList: NodeListOf<HTMLOptionElement> =
-            document.querySelectorAll("#armas > option");
+        const armasList: NodeListOf<HTMLOptionElement> = document.querySelectorAll("#armas > option");
+        armasList
+            .forEach((armaAtual, index) => {
+                if (armaAtual.innerText == arma) {
+                    this._armasSelect.selectedIndex = index;
+                }
+            });
 
-        armasList.forEach((armaAtual, index) => {
-            if (armaAtual.innerText == arma) {
-                this._armasSelect.selectedIndex = index;
-            }
-        });
-
-        const tiposElementais: NodeListOf<HTMLOptionElement> =
-            this._tiposElementaisSelect.querySelectorAll("option");
-        tiposElementais.forEach((tipoElementalAtual, index): void => {
-            if (tipoElementalAtual.innerText === tipoElemental) {
-                this._tiposElementaisSelect.selectedIndex = index;
-            }
-        });
+        const tiposElementais: NodeListOf<HTMLOptionElement> = this._tiposElementaisSelect.querySelectorAll("option");
+        tiposElementais
+            .forEach((tipoElementalAtual, index): void => {
+                if (tipoElementalAtual.innerText === tipoElemental) {
+                    this._tiposElementaisSelect.selectedIndex = index;
+                }
+            });
     }
 
     public async delete(id: number): Promise<void> {
@@ -200,19 +197,14 @@ export default class PersonagemController {
     private preencherCampos(): void {
         this._url = "https://trabalho-genshin.herokuapp.com/personagens";
         this._urlArmas = "https://trabalho-genshin.herokuapp.com/tipo-armas";
-        this._urlTiposElementais =
-            "https://trabalho-genshin.herokuapp.com/tipo-elemental";
+        this._urlTiposElementais = "https://trabalho-genshin.herokuapp.com/tipo-elemental";
         this._idInput = <HTMLInputElement>document.getElementById("id");
         this._nomeInput = <HTMLInputElement>document.getElementById("nome");
         this._notaInput = <HTMLInputElement>document.getElementById("nota");
         this._poderInput = <HTMLInputElement>document.getElementById("poder");
         this._armasSelect = <HTMLSelectElement>document.getElementById("armas");
-        this._tiposElementaisSelect = <HTMLSelectElement>(
-            document.getElementById("tipoElemental")
-        );
-        this._corpoTabela = <HTMLElement>(
-            document.getElementById("conteudoTabela")
-        );
+        this._tiposElementaisSelect = <HTMLSelectElement>document.getElementById("tipoElemental");
+        this._corpoTabela = <HTMLElement>document.getElementById("conteudoTabela");
     }
 
     public limparCampos(): void {
@@ -225,52 +217,35 @@ export default class PersonagemController {
     }
 
     private adicionarEventos(): void {
-        const table: NodeListOf<HTMLTableRowElement> = <
-            NodeListOf<HTMLTableRowElement>
-        >document.querySelectorAll("#conteudoTabela > tr");
+        const table: NodeListOf<HTMLTableRowElement> = <NodeListOf<HTMLTableRowElement>>document.querySelectorAll("#conteudoTabela > tr");
 
-        table.forEach((tr, index) => {
-            const tdId: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(1)")
-            );
-            const tdNome: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(2)")
-            );
-            const tdTipoElemental: HTMLTableCellElement = <
-                HTMLTableCellElement
-            >tr.querySelector("td:nth-child(3)");
-            const tdPoder: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(4)")
-            );
-            const tdArma: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(5)")
-            );
-            const tdNota: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(6)")
-            );
-            const buttonUpdate: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(7)")
-            );
-            const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>(
-                tr.querySelector("td:nth-child(8)")
-            );
+        table
+            .forEach((tr, index) => {
+                const tdId: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(1)");
+                const tdNome: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(2)");
+                const tdTipoElemental: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(3)");
+                const tdPoder: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(4)");
+                const tdArma: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(5)");
+                const tdNota: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(6)");
+                const buttonUpdate: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7)");
+                const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(8)");
 
-            buttonDelete.addEventListener("click", (event) => {
-                event.preventDefault();
-                this.delete(Number(tdId.innerText));
+                buttonDelete.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    this.delete(Number(tdId.innerText));
+                });
+
+                buttonUpdate.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    this.update(
+                        tdId.innerText,
+                        tdNome.innerText,
+                        tdTipoElemental.innerText,
+                        tdPoder.innerText,
+                        tdArma.innerText,
+                        tdNota.innerText
+                    );
+                });
             });
-
-            buttonUpdate.addEventListener("click", (event) => {
-                event.preventDefault();
-                this.update(
-                    tdId.innerText,
-                    tdNome.innerText,
-                    tdTipoElemental.innerText,
-                    tdPoder.innerText,
-                    tdArma.innerText,
-                    tdNota.innerText
-                );
-            });
-        });
     }
 }
