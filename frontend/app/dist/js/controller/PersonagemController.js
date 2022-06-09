@@ -73,17 +73,19 @@ export default class PersonagemController {
             headers: { "Content-Type": "application/json; charset=UTF-8" },
         })
             .then((response) => {
-            if (response.status == 200) {
-                alert("Atualização realizada com sucesso!");
-            }
-            else if (response.status == 201) {
-                alert("Cadastro realizado com sucesso!");
-            }
-            else if (response.status == 400) {
-                alert("Preencha todos os campos!");
-            }
-            else if (response.status == 500) {
-                alert("Erro no servidor!");
+            switch (response.status) {
+                case 200:
+                    alert("Atualização realizada com sucesso!");
+                    break;
+                case 201:
+                    alert("Personagem cadastrado com sucesso!");
+                    break;
+                case 400:
+                    alert("Preencha todos os campos!");
+                    break;
+                case 500:
+                    alert("Erro no servidor!");
+                    break;
             }
             this.findAll();
             this.limparCampos();
