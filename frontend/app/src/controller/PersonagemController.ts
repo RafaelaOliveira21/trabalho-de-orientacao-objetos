@@ -187,8 +187,10 @@ export default class PersonagemController {
                 <td class="text-center"> ${personagem.poder} </td>
                 <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
                 <td class="text-center"> ${personagem.nota} </td> 
-                <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
-                <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
+                <td class="text-center"> 
+                    <i role="button" .botao-atualizar class='bi bi-pencil text-warning me-3'></i>
+                    <i role="button" class='bi bi-trash text-danger botao-excluir'></i> 
+                </td> 
             </tr>
             `;
     }
@@ -252,9 +254,9 @@ export default class PersonagemController {
                 const tdPoder: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(4)");
                 const tdArma: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(5)");
                 const tdNota: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(6)");
-                const buttonUpdate: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7)");
-                const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(8)");
-
+                const buttonUpdate: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7) > i:nth-child(1)");
+                const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7) > i:nth-child(2)"); 
+                
                 buttonDelete.addEventListener("click", (event: Event) => {
                     event.preventDefault();
                     this.delete(Number(tdId.innerText));
