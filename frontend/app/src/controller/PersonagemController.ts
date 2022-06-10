@@ -1,4 +1,4 @@
-import { Method } from "../enums/Method.js";
+import {Method} from "../enums/Method.js";
 import PagePersonagem from "../model/PagePersonagem.js";
 import Personagem from "../model/Personagem.js";
 
@@ -24,12 +24,10 @@ export default class PersonagemController {
             .then((armas: Array<string>): void => {
                 armas
                     .forEach((arma: string): void => {
-                        const option: HTMLOptionElement = new Option(
-                            this.removerAspas(this.formatarNomeArma(arma)),
+                        this._armasSelect.options[this._armasSelect.options.length] = new Option(
+                            PersonagemController.removerAspas(PersonagemController.formatarNomeArma(arma)),
                             arma
                         );
-
-                        this._armasSelect.options[this._armasSelect.options.length] = option;
                     });
             })
             .catch((error: Error): void => alert(error));
@@ -39,19 +37,17 @@ export default class PersonagemController {
             .then((tiposElementais: Array<string>): void => {
                 tiposElementais
                     .forEach((tipoElemental: string): void => {
-                        const option: HTMLOptionElement = new Option(
-                            this.removerAspas(tipoElemental),
+                        this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = new Option(
+                            PersonagemController.removerAspas(tipoElemental),
                             tipoElemental
                         );
-
-                        this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = option;
                     });
             })
             .catch((error: Error): void => alert(error));
     }
 
     public async findPersonagens(page?: number, pageSize?: number): Promise<PagePersonagem> {
-        return await fetch(`${this.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
+        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert("Erro: " + error));
     }
@@ -64,7 +60,7 @@ export default class PersonagemController {
         localStorage.setItem("personagens", JSON.stringify(personagens.content));
         personagens
             .content
-            .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
+            .map((personagem: Personagem): string => response += PersonagemController.preencherTabela(personagem));
 
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
@@ -72,17 +68,17 @@ export default class PersonagemController {
 
     public async save(): Promise<void> {
         this.preencherCampos();
-        const arma = this.removerAspas(
+        const arma = PersonagemController.removerAspas(
             this._armasSelect.options[this._armasSelect.selectedIndex].value
         );
-        const tipoElemental = this.removerAspas(
+        const tipoElemental = PersonagemController.removerAspas(
             this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value
         );
         let personagem: Personagem;
 
         const id: number | null = Number(this._idInput.value);
         const metodo = id ? Method.PUT : Method.POST;
-        this._url = id ? `${this.getUrl()}/${id}` : this.getUrl();
+        this._url = id ? `${PersonagemController.getUrl()}/${id}` : PersonagemController.getUrl();
         personagem = new Personagem(
             id,
             this._nomeInput.value,
@@ -95,7 +91,7 @@ export default class PersonagemController {
         await fetch(this._url, {
             method: metodo,
             body: Personagem.fromJson(personagem),
-            headers: { "Content-Type": "application/json; charset=UTF-8" },
+            headers: {"Content-Type": "application/json; charset=UTF-8"},
         })
             .then((response: Response): void => {
                 switch (response.status) {
@@ -157,7 +153,7 @@ export default class PersonagemController {
         );
 
         if (confirmar) {
-            await fetch(`${this.getUrl()}/${id}`, {
+            await fetch(`${PersonagemController.getUrl()}/${id}`, {
                 method: Method.DELETE,
             })
                 .then((response: Response): void => {
@@ -170,26 +166,26 @@ export default class PersonagemController {
         }
     }
 
-    private formatarNomeArma(arma: string): string {
+    private static formatarNomeArma(arma: string): string {
         return arma.replace("LANCA", "LANÇA").replace("_", " ");
     }
 
-    private removerAspas(texto: string): string {
+    private static removerAspas(texto: string): string {
         return texto.replace(/['"]+/g, "");
     }
 
-    private getUrl(): string {
+    private static getUrl(): string {
         return "https://trabalho-genshin.herokuapp.com/personagens";
     }
 
-    private preencherTabela(personagem: Personagem): string {
+    private static preencherTabela(personagem: Personagem): string {
         return `
             <tr>
                 <td class="text-center"> ${personagem.id} </td> 
                 <td class="text-center"> ${personagem.nome} </td> 
                 <td class="text-center"> ${personagem.tipoElemental} </td>
                 <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
+                <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
                 <td class="text-center"> ${personagem.nota} </td> 
                 <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
                 <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
@@ -208,6 +204,7 @@ export default class PersonagemController {
         this._tiposElementaisSelect = <HTMLSelectElement>document.getElementById("tipoElemental");
         this._corpoTabela = <HTMLElement>document.getElementById("conteudoTabela");
         this._pageSize = <HTMLSelectElement>document.getElementById("pageSize");
+        this._pageSize.selectedIndex = 1;
         this._filterInput = <HTMLInputElement>document.getElementById("filter");
     }
 
@@ -223,17 +220,17 @@ export default class PersonagemController {
     public filtrarTabela(): void {
         this._filterInput.addEventListener("keyup", (event: Event): void => {
             event.preventDefault();
-            
+
             let response = '';
             JSON.parse(<string>localStorage.getItem("personagens"))
-                .filter((personagem: Personagem): boolean => this.filter(personagem, this._filterInput.value))
-                .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
+                .filter((personagem: Personagem): boolean => PersonagemController.filter(personagem, this._filterInput.value))
+                .map((personagem: Personagem): string => response += PersonagemController.preencherTabela(personagem));
 
             this._corpoTabela.innerHTML = response;
         });
 
         this._filterInput.addEventListener("blur", (event: Event): void => {
-            if(!this._filterInput.value) {
+            if (!this._filterInput.value) {
                 this.findAll();
             }
         });
@@ -277,7 +274,7 @@ export default class PersonagemController {
             });
     }
 
-    private filter(personagem: Personagem, valor: string): boolean {
+    private static filter(personagem: Personagem, valor: string): boolean {
         return personagem.id === Number(valor)
             || personagem.arma.toLowerCase().includes(valor)
             || personagem.nome.toLowerCase().includes(valor)

@@ -20,8 +20,7 @@ export default class PersonagemController {
             .then((armas) => {
             armas
                 .forEach((arma) => {
-                const option = new Option(this.removerAspas(this.formatarNomeArma(arma)), arma);
-                this._armasSelect.options[this._armasSelect.options.length] = option;
+                this._armasSelect.options[this._armasSelect.options.length] = new Option(PersonagemController.removerAspas(PersonagemController.formatarNomeArma(arma)), arma);
             });
         })
             .catch((error) => alert(error));
@@ -30,14 +29,13 @@ export default class PersonagemController {
             .then((tiposElementais) => {
             tiposElementais
                 .forEach((tipoElemental) => {
-                const option = new Option(this.removerAspas(tipoElemental), tipoElemental);
-                this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = option;
+                this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = new Option(PersonagemController.removerAspas(tipoElemental), tipoElemental);
             });
         })
             .catch((error) => alert(error));
     }
     async findPersonagens(page, pageSize) {
-        return await fetch(`${this.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
+        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
             .then((response) => response.json())
             .catch((error) => alert("Erro: " + error));
     }
@@ -48,18 +46,18 @@ export default class PersonagemController {
         localStorage.setItem("personagens", JSON.stringify(personagens.content));
         personagens
             .content
-            .map((personagem) => response += this.preencherTabela(personagem));
+            .map((personagem) => response += PersonagemController.preencherTabela(personagem));
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
     }
     async save() {
         this.preencherCampos();
-        const arma = this.removerAspas(this._armasSelect.options[this._armasSelect.selectedIndex].value);
-        const tipoElemental = this.removerAspas(this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value);
+        const arma = PersonagemController.removerAspas(this._armasSelect.options[this._armasSelect.selectedIndex].value);
+        const tipoElemental = PersonagemController.removerAspas(this._tiposElementaisSelect.options[this._tiposElementaisSelect.selectedIndex].value);
         let personagem;
         const id = Number(this._idInput.value);
         const metodo = id ? Method.PUT : Method.POST;
-        this._url = id ? `${this.getUrl()}/${id}` : this.getUrl();
+        this._url = id ? `${PersonagemController.getUrl()}/${id}` : PersonagemController.getUrl();
         personagem = new Personagem(id, this._nomeInput.value, tipoElemental, arma, this._poderInput.value, Number(this._notaInput.value));
         await fetch(this._url, {
             method: metodo,
@@ -111,7 +109,7 @@ export default class PersonagemController {
     async delete(id) {
         const confirmar = confirm(`Confirmar exclusão do personagem de id ${id}?`);
         if (confirmar) {
-            await fetch(`${this.getUrl()}/${id}`, {
+            await fetch(`${PersonagemController.getUrl()}/${id}`, {
                 method: Method.DELETE,
             })
                 .then((response) => {
@@ -121,23 +119,23 @@ export default class PersonagemController {
                 .catch((error) => alert(`Problema na remoção: ${error}`));
         }
     }
-    formatarNomeArma(arma) {
+    static formatarNomeArma(arma) {
         return arma.replace("LANCA", "LANÇA").replace("_", " ");
     }
-    removerAspas(texto) {
+    static removerAspas(texto) {
         return texto.replace(/['"]+/g, "");
     }
-    getUrl() {
+    static getUrl() {
         return "https://trabalho-genshin.herokuapp.com/personagens";
     }
-    preencherTabela(personagem) {
+    static preencherTabela(personagem) {
         return `
             <tr>
                 <td class="text-center"> ${personagem.id} </td> 
                 <td class="text-center"> ${personagem.nome} </td> 
                 <td class="text-center"> ${personagem.tipoElemental} </td>
                 <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${this.formatarNomeArma(personagem.arma)} </td>
+                <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
                 <td class="text-center"> ${personagem.nota} </td> 
                 <td class="text-center"> <i role="button" .botao-atualizar class='bi bi-pencil text-warning'></i></td>
                 <td class="text-center"> <i role="button" class='bi bi-trash text-danger botao-excluir'></i> </td> 
@@ -155,6 +153,7 @@ export default class PersonagemController {
         this._tiposElementaisSelect = document.getElementById("tipoElemental");
         this._corpoTabela = document.getElementById("conteudoTabela");
         this._pageSize = document.getElementById("pageSize");
+        this._pageSize.selectedIndex = 1;
         this._filterInput = document.getElementById("filter");
     }
     limparCampos() {
@@ -170,8 +169,8 @@ export default class PersonagemController {
             event.preventDefault();
             let response = '';
             JSON.parse(localStorage.getItem("personagens"))
-                .filter((personagem) => this.filter(personagem, this._filterInput.value))
-                .map((personagem) => response += this.preencherTabela(personagem));
+                .filter((personagem) => PersonagemController.filter(personagem, this._filterInput.value))
+                .map((personagem) => response += PersonagemController.preencherTabela(personagem));
             this._corpoTabela.innerHTML = response;
         });
         this._filterInput.addEventListener("blur", (event) => {
@@ -206,7 +205,7 @@ export default class PersonagemController {
             });
         });
     }
-    filter(personagem, valor) {
+    static filter(personagem, valor) {
         return personagem.id === Number(valor)
             || personagem.arma.toLowerCase().includes(valor)
             || personagem.nome.toLowerCase().includes(valor)
