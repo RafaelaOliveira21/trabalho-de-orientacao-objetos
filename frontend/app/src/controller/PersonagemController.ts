@@ -1,4 +1,4 @@
-import {Method} from "../enums/Method.js";
+import { Method } from "../enums/Method.js";
 import PagePersonagem from "../model/PagePersonagem.js";
 import Personagem from "../model/Personagem.js";
 
@@ -13,6 +13,7 @@ export default class PersonagemController {
     private _armasSelect: HTMLSelectElement;
     private _tiposElementaisSelect: HTMLSelectElement;
     private _corpoTabela: HTMLElement;
+    private _paginacao: HTMLUListElement;
     private _pageSize: HTMLSelectElement;
     private _filterInput: HTMLInputElement;
 
@@ -47,23 +48,18 @@ export default class PersonagemController {
     }
 
     public async findPersonagens(page?: number, pageSize?: number): Promise<PagePersonagem> {
-        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
+        const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
+
+        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`)
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert("Erro: " + error));
     }
 
     public async findAll(page?: number, pageSize?: number): Promise<void> {
-        pageSize = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
-
-        let response: string = "";
         const personagens: PagePersonagem = await this.findPersonagens(page, pageSize);
+        this.criarPaginacao(personagens);
+        this.paginacaoController(personagens);
         localStorage.setItem("personagens", JSON.stringify(personagens.content));
-        personagens
-            .content
-            .map((personagem: Personagem): string => response += PersonagemController.preencherTabela(personagem));
-
-        this._corpoTabela.innerHTML = response;
-        this.adicionarEventos();
     }
 
     public async save(): Promise<void> {
@@ -91,7 +87,7 @@ export default class PersonagemController {
         await fetch(this._url, {
             method: metodo,
             body: Personagem.fromJson(personagem),
-            headers: {"Content-Type": "application/json; charset=UTF-8"},
+            headers: { "Content-Type": "application/json; charset=UTF-8" },
         })
             .then((response: Response): void => {
                 switch (response.status) {
@@ -178,20 +174,20 @@ export default class PersonagemController {
         return "https://trabalho-genshin.herokuapp.com/personagens";
     }
 
-    private static preencherTabela(personagem: Personagem): string {
+    private static criarLinhasTabela(personagem: Personagem): string {
         return `
-            <tr>
-                <td class="text-center"> ${personagem.id} </td> 
-                <td class="text-center"> ${personagem.nome} </td> 
-                <td class="text-center"> ${personagem.tipoElemental} </td>
-                <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
-                <td class="text-center"> ${personagem.nota} </td> 
-                <td class="text-center"> 
-                    <i role="button" .botao-atualizar class='bi bi-pencil text-warning me-3'></i>
-                    <i role="button" class='bi bi-trash text-danger botao-excluir'></i> 
-                </td> 
-            </tr>
+                <tr>
+                    <td class="text-center"> ${personagem.id} </td> 
+                    <td class="text-center"> ${personagem.nome} </td> 
+                    <td class="text-center"> ${personagem.tipoElemental} </td>
+                    <td class="text-center"> ${personagem.poder} </td>
+                    <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
+                    <td class="text-center"> ${personagem.nota} </td> 
+                    <td class="text-center"> 
+                        <i role="button" .botao-atualizar class='bi bi-pencil text-warning me-3'></i>
+                        <i role="button" class='bi bi-trash text-danger botao-excluir'></i> 
+                    </td> 
+                </tr>
             `;
     }
 
@@ -208,6 +204,7 @@ export default class PersonagemController {
         this._pageSize = <HTMLSelectElement>document.getElementById("pageSize");
         this._pageSize.selectedIndex = 1;
         this._filterInput = <HTMLInputElement>document.getElementById("filter");
+        this._paginacao = <HTMLUListElement>document.getElementById("pagination");
     }
 
     public limparCampos(): void {
@@ -226,7 +223,7 @@ export default class PersonagemController {
             let response = '';
             JSON.parse(<string>localStorage.getItem("personagens"))
                 .filter((personagem: Personagem): boolean => PersonagemController.filter(personagem, this._filterInput.value))
-                .map((personagem: Personagem): string => response += PersonagemController.preencherTabela(personagem));
+                .map((personagem: Personagem): string => response += PersonagemController.criarLinhasTabela(personagem));
 
             this._corpoTabela.innerHTML = response;
         });
@@ -255,8 +252,8 @@ export default class PersonagemController {
                 const tdArma: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(5)");
                 const tdNota: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(6)");
                 const buttonUpdate: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7) > i:nth-child(1)");
-                const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7) > i:nth-child(2)"); 
-                
+                const buttonDelete: HTMLTableCellElement = <HTMLTableCellElement>tr.querySelector("td:nth-child(7) > i:nth-child(2)");
+
                 buttonDelete.addEventListener("click", (event: Event) => {
                     event.preventDefault();
                     this.delete(Number(tdId.innerText));
@@ -283,5 +280,115 @@ export default class PersonagemController {
             || personagem.tipoElemental.toLowerCase().includes(valor)
             || personagem.poder.toLowerCase().includes(valor)
             || personagem.nota === Number(valor);
+    }
+
+    private criarPaginacao(personagens: PagePersonagem): void {
+        const botaoAnterior: string = `<li class="page-item"><button class="page-link controlador">Anterior</button></li>`;
+        const botaoProximo: string = `<li class="page-item"><button class="page-link controlador">Próximo</button></li>`;
+        let botaoPageNumber: string = '';
+
+        for (let i: number = 0; i < personagens.totalPages; i++) {
+            botaoPageNumber += `<li class="page-item"><button class="page-link number">${i + 1}</button></li>`;
+        }
+
+        this._paginacao.innerHTML = botaoAnterior + botaoPageNumber + botaoProximo;
+    }
+
+    private paginacaoController(personagens: PagePersonagem): void {
+        // TODO: Melhorar o código, a lógica já está funcionando.
+        const botoesNumber: NodeListOf<HTMLButtonElement> =
+            <NodeListOf<HTMLButtonElement>>document.querySelectorAll("#pagination > li > button.number");
+        const botoesPaginacao: NodeListOf<HTMLButtonElement> =
+            <NodeListOf<HTMLButtonElement>>document.querySelectorAll("#pagination > li > button.controlador");
+
+        botoesNumber[0].classList.toggle("active");
+        botoesPaginacao[0].classList.toggle("disabled");
+        if(botoesNumber.length < 2) {
+            botoesPaginacao[1].classList.add("disabled");
+        }
+
+        botoesPaginacao.forEach((botaoPaginacao: HTMLButtonElement): void => {
+            botaoPaginacao.addEventListener("click", async (event: Event): Promise<void> => {
+                event.preventDefault();
+
+                let pageNumber: number;
+                if (botaoPaginacao.innerText == "Anterior") {
+                    pageNumber = --personagens.number;
+                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                    botoesNumber[pageNumber].classList.add("active");
+                    botoesNumber[++pageNumber].classList.remove("active");
+                } else if (botaoPaginacao.innerText == "Próximo") {
+                    pageNumber = ++personagens.number;
+                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                    botoesNumber[pageNumber].classList.add("active");
+                    botoesNumber[--pageNumber].classList.remove("active");
+                }
+
+                if (botoesNumber[0].classList.contains("active")) {
+                    botoesPaginacao[0].classList.add("disabled");
+
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[1].classList.remove("disabled");
+                    }
+
+                } else if (Number(botoesNumber[personagens.number].innerText) === personagens.totalPages) {
+                    botoesPaginacao[1].classList.add("disabled");
+
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[0].classList.remove("disabled");
+                    }
+
+                } else {
+                    botoesPaginacao[0].classList.remove("disabled");
+                    botoesPaginacao[1].classList.remove("disabled");
+                }
+
+                this.preencherTabela(personagens);
+            });
+        });
+
+
+        botoesNumber.forEach((botaoNumber: HTMLButtonElement): void => {
+            botaoNumber.addEventListener("click", async (event: Event): Promise<void> => {
+                event.preventDefault();
+                botoesNumber.forEach((botao: HTMLButtonElement): void => botao.classList.remove("active"));
+                botaoNumber.classList.add("active");
+
+                if (botaoNumber.innerText === "1") {
+                    botoesPaginacao[0].classList.add("disabled");
+
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[1].classList.remove("disabled");
+                    }
+
+                } else if (Number(botaoNumber.innerText) === (personagens.totalPages)) {
+                    botoesPaginacao[1].classList.add("disabled");
+
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[0].classList.remove("disabled");
+                    }
+
+                } else {
+                    botoesPaginacao[0].classList.remove("disabled");
+                    botoesPaginacao[1].classList.remove("disabled");
+                }
+
+                personagens = await this.findPersonagens(Number(botaoNumber.innerText) - 1);
+
+                this.preencherTabela(personagens);
+
+            });
+        });
+
+        this.preencherTabela(personagens);
+    }
+
+    private preencherTabela(personagens: PagePersonagem): void {
+        let response = '';
+        personagens
+            .content
+            .map((personagem: Personagem): string => response += PersonagemController.criarLinhasTabela(personagem));
+        this._corpoTabela.innerHTML = response;
+        this.adicionarEventos();
     }
 }

@@ -1,4 +1,6 @@
 import PersonagemController from "./controller/PersonagemController.js";
+import PagePersonagem from './model/PagePersonagem.js';
+import Personagem from './model/Personagem';
 
 const personagemControlle: PersonagemController = new PersonagemController();
 
@@ -26,30 +28,3 @@ buttonAtualizar.addEventListener("click", (event) => {
     event.preventDefault();
     personagemControlle.limparCampos();
 });
-
-// ---------------------------------------
-// function populateList() {
-//     console.log('rodando a função')
-// }
-
-// populateList();
-
-const state = {
-    page: 1,
-    perPage: 5,
-    totalPages: 5
-}
-
-const controls = {
-    next() {
-        state.page++;
-
-        // if()
-    },
-    prev() {
-
-    },
-    goTo() {
-
-    }
-}

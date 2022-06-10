@@ -15,18 +15,4 @@ buttonAtualizar.addEventListener("click", (event) => {
     event.preventDefault();
     personagemControlle.limparCampos();
 });
-const state = {
-    page: 1,
-    perPage: 5,
-    totalPages: 5
-};
-const controls = {
-    next() {
-        state.page++;
-    },
-    prev() {
-    },
-    goTo() {
-    }
-};
 //# sourceMappingURL=app.js.map

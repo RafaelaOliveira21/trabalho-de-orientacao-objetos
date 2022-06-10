@@ -11,6 +11,7 @@ export default class PersonagemController {
     _armasSelect;
     _tiposElementaisSelect;
     _corpoTabela;
+    _paginacao;
     _pageSize;
     _filterInput;
     constructor() {
@@ -35,20 +36,16 @@ export default class PersonagemController {
             .catch((error) => alert(error));
     }
     async findPersonagens(page, pageSize) {
-        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : 10}&sort=id,asc`)
+        const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
+        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`)
             .then((response) => response.json())
             .catch((error) => alert("Erro: " + error));
     }
     async findAll(page, pageSize) {
-        pageSize = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
-        let response = "";
         const personagens = await this.findPersonagens(page, pageSize);
+        this.criarPaginacao(personagens);
+        this.paginacaoController(personagens);
         localStorage.setItem("personagens", JSON.stringify(personagens.content));
-        personagens
-            .content
-            .map((personagem) => response += PersonagemController.preencherTabela(personagem));
-        this._corpoTabela.innerHTML = response;
-        this.adicionarEventos();
     }
     async save() {
         this.preencherCampos();
@@ -128,20 +125,20 @@ export default class PersonagemController {
     static getUrl() {
         return "https://trabalho-genshin.herokuapp.com/personagens";
     }
-    static preencherTabela(personagem) {
+    static criarLinhasTabela(personagem) {
         return `
-            <tr>
-                <td class="text-center"> ${personagem.id} </td> 
-                <td class="text-center"> ${personagem.nome} </td> 
-                <td class="text-center"> ${personagem.tipoElemental} </td>
-                <td class="text-center"> ${personagem.poder} </td>
-                <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
-                <td class="text-center"> ${personagem.nota} </td> 
-                <td class="text-center"> 
-                    <i role="button" .botao-atualizar class='bi bi-pencil text-warning me-3'></i>
-                    <i role="button" class='bi bi-trash text-danger botao-excluir'></i> 
-                </td> 
-            </tr>
+                <tr>
+                    <td class="text-center"> ${personagem.id} </td> 
+                    <td class="text-center"> ${personagem.nome} </td> 
+                    <td class="text-center"> ${personagem.tipoElemental} </td>
+                    <td class="text-center"> ${personagem.poder} </td>
+                    <td class="text-center"> ${PersonagemController.formatarNomeArma(personagem.arma)} </td>
+                    <td class="text-center"> ${personagem.nota} </td> 
+                    <td class="text-center"> 
+                        <i role="button" .botao-atualizar class='bi bi-pencil text-warning me-3'></i>
+                        <i role="button" class='bi bi-trash text-danger botao-excluir'></i> 
+                    </td> 
+                </tr>
             `;
     }
     preencherCampos() {
@@ -157,6 +154,7 @@ export default class PersonagemController {
         this._pageSize = document.getElementById("pageSize");
         this._pageSize.selectedIndex = 1;
         this._filterInput = document.getElementById("filter");
+        this._paginacao = document.getElementById("pagination");
     }
     limparCampos() {
         this._idInput.value = "";
@@ -172,7 +170,7 @@ export default class PersonagemController {
             let response = '';
             JSON.parse(localStorage.getItem("personagens"))
                 .filter((personagem) => PersonagemController.filter(personagem, this._filterInput.value))
-                .map((personagem) => response += PersonagemController.preencherTabela(personagem));
+                .map((personagem) => response += PersonagemController.criarLinhasTabela(personagem));
             this._corpoTabela.innerHTML = response;
         });
         this._filterInput.addEventListener("blur", (event) => {
@@ -214,6 +212,93 @@ export default class PersonagemController {
             || personagem.tipoElemental.toLowerCase().includes(valor)
             || personagem.poder.toLowerCase().includes(valor)
             || personagem.nota === Number(valor);
+    }
+    criarPaginacao(personagens) {
+        const botaoAnterior = `<li class="page-item"><button class="page-link controlador">Anterior</button></li>`;
+        const botaoProximo = `<li class="page-item"><button class="page-link controlador">Próximo</button></li>`;
+        let botaoPageNumber = '';
+        for (let i = 0; i < personagens.totalPages; i++) {
+            botaoPageNumber += `<li class="page-item"><button class="page-link number">${i + 1}</button></li>`;
+        }
+        this._paginacao.innerHTML = botaoAnterior + botaoPageNumber + botaoProximo;
+    }
+    paginacaoController(personagens) {
+        const botoesNumber = document.querySelectorAll("#pagination > li > button.number");
+        const botoesPaginacao = document.querySelectorAll("#pagination > li > button.controlador");
+        botoesNumber[0].classList.toggle("active");
+        botoesPaginacao[0].classList.toggle("disabled");
+        if (botoesNumber.length < 2) {
+            botoesPaginacao[1].classList.add("disabled");
+        }
+        botoesPaginacao.forEach((botaoPaginacao) => {
+            botaoPaginacao.addEventListener("click", async (event) => {
+                event.preventDefault();
+                let pageNumber;
+                if (botaoPaginacao.innerText == "Anterior") {
+                    pageNumber = --personagens.number;
+                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                    botoesNumber[pageNumber].classList.add("active");
+                    botoesNumber[++pageNumber].classList.remove("active");
+                }
+                else if (botaoPaginacao.innerText == "Próximo") {
+                    pageNumber = ++personagens.number;
+                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                    botoesNumber[pageNumber].classList.add("active");
+                    botoesNumber[--pageNumber].classList.remove("active");
+                }
+                if (botoesNumber[0].classList.contains("active")) {
+                    botoesPaginacao[0].classList.add("disabled");
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[1].classList.remove("disabled");
+                    }
+                }
+                else if (Number(botoesNumber[personagens.number].innerText) === personagens.totalPages) {
+                    botoesPaginacao[1].classList.add("disabled");
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[0].classList.remove("disabled");
+                    }
+                }
+                else {
+                    botoesPaginacao[0].classList.remove("disabled");
+                    botoesPaginacao[1].classList.remove("disabled");
+                }
+                this.preencherTabela(personagens);
+            });
+        });
+        botoesNumber.forEach((botaoNumber) => {
+            botaoNumber.addEventListener("click", async (event) => {
+                event.preventDefault();
+                botoesNumber.forEach((botao) => botao.classList.remove("active"));
+                botaoNumber.classList.add("active");
+                if (botaoNumber.innerText === "1") {
+                    botoesPaginacao[0].classList.add("disabled");
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[1].classList.remove("disabled");
+                    }
+                }
+                else if (Number(botaoNumber.innerText) === (personagens.totalPages)) {
+                    botoesPaginacao[1].classList.add("disabled");
+                    if (botoesNumber.length === 2) {
+                        botoesPaginacao[0].classList.remove("disabled");
+                    }
+                }
+                else {
+                    botoesPaginacao[0].classList.remove("disabled");
+                    botoesPaginacao[1].classList.remove("disabled");
+                }
+                personagens = await this.findPersonagens(Number(botaoNumber.innerText) - 1);
+                this.preencherTabela(personagens);
+            });
+        });
+        this.preencherTabela(personagens);
+    }
+    preencherTabela(personagens) {
+        let response = '';
+        personagens
+            .content
+            .map((personagem) => response += PersonagemController.criarLinhasTabela(personagem));
+        this._corpoTabela.innerHTML = response;
+        this.adicionarEventos();
     }
 }
 //# sourceMappingURL=PersonagemController.js.map

@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+    <link rel="icon" href="./imgs/logo.jpeg">
 </head>
 
 <body>
@@ -85,14 +86,15 @@
             <div class="row col-sm">
                 <div class="">
                     <select class="form-select-sm" id="pageSize">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
                         <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                     </select>
                     <div class="mb-3 float-end">
-                        <input id="filter" class="float-end form-control" type="search" name="filter" placeholder="Pesquisar"/>
+                        <input id="filter" class="float-end form-control" type="search" name="filter"
+                            placeholder="Pesquisar" />
                     </div>
                 </div>
             </div>
@@ -111,6 +113,13 @@
                     <!-- preenchido automaticamente -->
                 </tbody>
             </table>
+
+            <div class="mb-4">
+                <ul class="pagination" id="pagination">
+                    <!-- <li class="page-item"><button class="page-link">Anterior</button></li>
+                    <li class="page-item"><button class="page-link">Próxima</button></li> -->
+                </ul>
+            </div>
 
             <!-- <div class="pagination mb-4">
                 <div class="first">&#171;</div>
