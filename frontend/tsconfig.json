@@ -3,7 +3,7 @@
         "outDir": "app/dist/js",
         "target": "ESNext",
         "noEmitOnError": true,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "removeComments": true,
         "strictNullChecks": true,
         "experimentalDecorators": true,

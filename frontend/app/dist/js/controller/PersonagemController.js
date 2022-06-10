@@ -43,19 +43,12 @@ export default class PersonagemController {
     }
     async findAll(page, pageSize) {
         pageSize = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
-        const personagens = await (await this.findPersonagens(page, pageSize));
         let response = "";
-        if (this._filterInput.value) {
-            personagens
-                .content
-                .filter((personagem) => this.filter(personagem, this._filterInput.value))
-                .map((personagem) => response += this.preencherTabela(personagem));
-        }
-        else {
-            personagens
-                .content
-                .map((personagem) => response += this.preencherTabela(personagem));
-        }
+        const personagens = await this.findPersonagens(page, pageSize);
+        localStorage.setItem("personagens", JSON.stringify(personagens.content));
+        personagens
+            .content
+            .map((personagem) => response += this.preencherTabela(personagem));
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
     }
@@ -172,14 +165,24 @@ export default class PersonagemController {
         this._armasSelect.selectedIndex = 0;
         this._tiposElementaisSelect.selectedIndex = 0;
     }
+    filtrarTabela() {
+        this._filterInput.addEventListener("keyup", (event) => {
+            event.preventDefault();
+            let response = '';
+            JSON.parse(localStorage.getItem("personagens"))
+                .filter((personagem) => this.filter(personagem, this._filterInput.value))
+                .map((personagem) => response += this.preencherTabela(personagem));
+            this._corpoTabela.innerHTML = response;
+        });
+        this._filterInput.addEventListener("blur", (event) => {
+            if (!this._filterInput.value) {
+                this.findAll();
+            }
+        });
+    }
     adicionarEventos() {
         this._pageSize.addEventListener("change", (event) => {
             event.preventDefault();
-            this.findAll(0, Number(this._pageSize.value));
-        });
-        this._filterInput.addEventListener("keyup", (event) => {
-            event.preventDefault();
-            console.log(this._filterInput.value);
             this.findAll(0, Number(this._pageSize.value));
         });
         const table = document.querySelectorAll("#conteudoTabela > tr");

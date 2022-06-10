@@ -3,6 +3,7 @@ const personagemControlle = new PersonagemController();
 window.addEventListener("load", (event) => {
     event.preventDefault();
     personagemControlle.findAll();
+    personagemControlle.filtrarTabela();
 }, false);
 const buttonCadastrar = (document.getElementById("cadastrar"));
 const buttonAtualizar = (document.getElementById("limpar"));

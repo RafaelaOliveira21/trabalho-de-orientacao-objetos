@@ -7,6 +7,7 @@ window.addEventListener(
     (event) => {
         event.preventDefault();
         personagemControlle.findAll();
+        personagemControlle.filtrarTabela();
     },
     false
 );

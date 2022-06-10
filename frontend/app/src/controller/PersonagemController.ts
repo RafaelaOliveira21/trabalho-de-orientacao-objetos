@@ -59,19 +59,12 @@ export default class PersonagemController {
     public async findAll(page?: number, pageSize?: number): Promise<void> {
         pageSize = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
 
-        const personagens: PagePersonagem = await (await this.findPersonagens(page, pageSize));
         let response: string = "";
-
-        if (this._filterInput.value) {
-            personagens
-                .content
-                .filter((personagem: Personagem): boolean => this.filter(personagem, this._filterInput.value))
-                .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
-        } else {
-            personagens
-                .content
-                .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
-        }
+        const personagens: PagePersonagem = await this.findPersonagens(page, pageSize);
+        localStorage.setItem("personagens", JSON.stringify(personagens.content));
+        personagens
+            .content
+            .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
 
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
@@ -227,18 +220,31 @@ export default class PersonagemController {
         this._tiposElementaisSelect.selectedIndex = 0;
     }
 
+    public filtrarTabela(): void {
+        this._filterInput.addEventListener("keyup", (event: Event): void => {
+            event.preventDefault();
+            
+            let response = '';
+            JSON.parse(<string>localStorage.getItem("personagens"))
+                .filter((personagem: Personagem): boolean => this.filter(personagem, this._filterInput.value))
+                .map((personagem: Personagem): string => response += this.preencherTabela(personagem));
+
+            this._corpoTabela.innerHTML = response;
+        });
+
+        this._filterInput.addEventListener("blur", (event: Event): void => {
+            if(!this._filterInput.value) {
+                this.findAll();
+            }
+        });
+    }
+
     private adicionarEventos(): void {
         this._pageSize.addEventListener("change", (event: Event): void => {
             event.preventDefault();
             this.findAll(0, Number(this._pageSize.value));
         });
 
-        this._filterInput.addEventListener("keyup", (event: Event): void => {
-            event.preventDefault();
-            // BUG: ao digitar o filtro, está sendo feito mais de uma requisição por vez(a cada tecla digitada) e está dando erro.
-            console.log(this._filterInput.value);
-            this.findAll(0, Number(this._pageSize.value));
-        });
         const table: NodeListOf<HTMLTableRowElement> = <NodeListOf<HTMLTableRowElement>>document.querySelectorAll("#conteudoTabela > tr");
 
         table
