@@ -202,7 +202,6 @@ export default class PersonagemController {
         this._tiposElementaisSelect = <HTMLSelectElement>document.getElementById("tipoElemental");
         this._corpoTabela = <HTMLElement>document.getElementById("conteudoTabela");
         this._pageSize = <HTMLSelectElement>document.getElementById("pageSize");
-        this._pageSize.selectedIndex = 1;
         this._filterInput = <HTMLInputElement>document.getElementById("filter");
         this._paginacao = <HTMLUListElement>document.getElementById("pagination");
     }
