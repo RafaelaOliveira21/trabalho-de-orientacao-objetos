@@ -64,7 +64,6 @@ export default class PersonagemController {
         const personagens: Page<Personagem> = await this.findPersonagens(page, pageSize);
         this.criarPaginacao(personagens);
         this.paginacaoController(personagens);
-        localStorage.setItem("personagens", JSON.stringify(personagens.content));
     }
 
     public async save(): Promise<void> {
