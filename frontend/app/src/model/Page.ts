@@ -2,8 +2,8 @@ import Pageable from './Pageable.js';
 import Personagem from './Personagem.js';
 import Sort from './Sort.js';
 
-export default interface PagePersonagem {
-    content: Array<Personagem>;
+export default interface Page<T> {
+    content: Array<T>;
     empty: boolean;
     first: boolean;
     last: boolean;

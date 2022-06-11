@@ -1,5 +1,5 @@
 import PersonagemController from "./controller/PersonagemController.js";
-import PagePersonagem from './model/PagePersonagem.js';
+import Page from './model/Page.js';
 import Personagem from './model/Personagem';
 
 const personagemControlle: PersonagemController = new PersonagemController();

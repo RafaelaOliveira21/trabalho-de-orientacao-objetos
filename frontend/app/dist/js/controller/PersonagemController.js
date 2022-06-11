@@ -233,33 +233,31 @@ export default class PersonagemController {
             botaoPaginacao.addEventListener("click", async (event) => {
                 event.preventDefault();
                 let pageNumber;
-                if (botaoPaginacao.innerText == "Anterior") {
-                    pageNumber = --personagens.number;
-                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
-                    botoesNumber[pageNumber].classList.add("active");
-                    botoesNumber[++pageNumber].classList.remove("active");
-                }
-                else if (botaoPaginacao.innerText == "Próximo") {
-                    pageNumber = ++personagens.number;
-                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
-                    botoesNumber[pageNumber].classList.add("active");
-                    botoesNumber[--pageNumber].classList.remove("active");
+                switch (botaoPaginacao.innerText) {
+                    case "Anterior":
+                        pageNumber = --personagens.number;
+                        personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                        botoesNumber[pageNumber].classList.add("active");
+                        botoesNumber[++pageNumber].classList.remove("active");
+                        break;
+                    case "Próximo":
+                        pageNumber = ++personagens.number;
+                        personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                        botoesNumber[pageNumber].classList.add("active");
+                        botoesNumber[--pageNumber].classList.remove("active");
+                        break;
                 }
                 if (botoesNumber[0].classList.contains("active")) {
-                    botoesPaginacao[0].classList.add("disabled");
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[1].classList.remove("disabled");
-                    }
+                    this.desativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 }
                 else if (Number(botoesNumber[personagens.number].innerText) === personagens.totalPages) {
-                    botoesPaginacao[1].classList.add("disabled");
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[0].classList.remove("disabled");
-                    }
+                    this.desativarBotaoProximo(botoesPaginacao);
+                    this.ativarBotaoAnterior(botoesPaginacao);
                 }
                 else {
-                    botoesPaginacao[0].classList.remove("disabled");
-                    botoesPaginacao[1].classList.remove("disabled");
+                    this.ativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 }
                 this.preencherTabela(personagens);
             });
@@ -270,20 +268,16 @@ export default class PersonagemController {
                 botoesNumber.forEach((botao) => botao.classList.remove("active"));
                 botaoNumber.classList.add("active");
                 if (botaoNumber.innerText === "1") {
-                    botoesPaginacao[0].classList.add("disabled");
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[1].classList.remove("disabled");
-                    }
+                    this.desativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 }
                 else if (Number(botaoNumber.innerText) === (personagens.totalPages)) {
-                    botoesPaginacao[1].classList.add("disabled");
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[0].classList.remove("disabled");
-                    }
+                    this.desativarBotaoProximo(botoesPaginacao);
+                    this.ativarBotaoAnterior(botoesPaginacao);
                 }
                 else {
-                    botoesPaginacao[0].classList.remove("disabled");
-                    botoesPaginacao[1].classList.remove("disabled");
+                    this.ativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 }
                 personagens = await this.findPersonagens(Number(botaoNumber.innerText) - 1);
                 this.preencherTabela(personagens);
@@ -298,6 +292,18 @@ export default class PersonagemController {
             .map((personagem) => response += PersonagemController.criarLinhasTabela(personagem));
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
+    }
+    ativarBotaoAnterior(botoesPaginacao) {
+        botoesPaginacao[0].classList.remove("disabled");
+    }
+    desativarBotaoAnterior(botoesPaginacao) {
+        botoesPaginacao[0].classList.add("disabled");
+    }
+    ativarBotaoProximo(botoesPaginacao) {
+        botoesPaginacao[1].classList.remove("disabled");
+    }
+    desativarBotaoProximo(botoesPaginacao) {
+        botoesPaginacao[1].classList.add("disabled");
     }
 }
 //# sourceMappingURL=PersonagemController.js.map

@@ -1,5 +1,5 @@
 import { Method } from "../enums/Method.js";
-import PagePersonagem from "../model/PagePersonagem.js";
+import Page from "../model/Page.js";
 import Personagem from "../model/Personagem.js";
 
 export default class PersonagemController {
@@ -47,7 +47,7 @@ export default class PersonagemController {
             .catch((error: Error): void => alert(error));
     }
 
-    public async findPersonagens(page?: number, pageSize?: number): Promise<PagePersonagem> {
+    public async findPersonagens(page?: number, pageSize?: number): Promise<Page<Personagem>> {
         const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
 
         return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`)
@@ -56,7 +56,7 @@ export default class PersonagemController {
     }
 
     public async findAll(page?: number, pageSize?: number): Promise<void> {
-        const personagens: PagePersonagem = await this.findPersonagens(page, pageSize);
+        const personagens: Page<Personagem> = await this.findPersonagens(page, pageSize);
         this.criarPaginacao(personagens);
         this.paginacaoController(personagens);
         localStorage.setItem("personagens", JSON.stringify(personagens.content));
@@ -281,7 +281,7 @@ export default class PersonagemController {
             || personagem.nota === Number(valor);
     }
 
-    private criarPaginacao(personagens: PagePersonagem): void {
+    private criarPaginacao(personagens: Page<Personagem>): void {
         const botaoAnterior: string = `<li class="page-item"><button class="page-link controlador">Anterior</button></li>`;
         const botaoProximo: string = `<li class="page-item"><button class="page-link controlador">Próximo</button></li>`;
         let botaoPageNumber: string = '';
@@ -293,7 +293,7 @@ export default class PersonagemController {
         this._paginacao.innerHTML = botaoAnterior + botaoPageNumber + botaoProximo;
     }
 
-    private paginacaoController(personagens: PagePersonagem): void {
+    private paginacaoController(personagens: Page<Personagem>): void {
         // TODO: Melhorar o código, a lógica já está funcionando.
         const botoesNumber: NodeListOf<HTMLButtonElement> =
             <NodeListOf<HTMLButtonElement>>document.querySelectorAll("#pagination > li > button.number");
@@ -302,7 +302,7 @@ export default class PersonagemController {
 
         botoesNumber[0].classList.toggle("active");
         botoesPaginacao[0].classList.toggle("disabled");
-        if(botoesNumber.length < 2) {
+        if (botoesNumber.length < 2) {
             botoesPaginacao[1].classList.add("disabled");
         }
 
@@ -311,35 +311,31 @@ export default class PersonagemController {
                 event.preventDefault();
 
                 let pageNumber: number;
-                if (botaoPaginacao.innerText == "Anterior") {
-                    pageNumber = --personagens.number;
-                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
-                    botoesNumber[pageNumber].classList.add("active");
-                    botoesNumber[++pageNumber].classList.remove("active");
-                } else if (botaoPaginacao.innerText == "Próximo") {
-                    pageNumber = ++personagens.number;
-                    personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
-                    botoesNumber[pageNumber].classList.add("active");
-                    botoesNumber[--pageNumber].classList.remove("active");
+
+                switch (botaoPaginacao.innerText) {
+                    case "Anterior":
+                        pageNumber = --personagens.number;
+                        personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                        botoesNumber[pageNumber].classList.add("active");
+                        botoesNumber[++pageNumber].classList.remove("active");
+                        break;
+                    case "Próximo":
+                        pageNumber = ++personagens.number;
+                        personagens = await this.findPersonagens(pageNumber, Number(this._pageSize.value));
+                        botoesNumber[pageNumber].classList.add("active");
+                        botoesNumber[--pageNumber].classList.remove("active");
+                        break;
                 }
 
                 if (botoesNumber[0].classList.contains("active")) {
-                    botoesPaginacao[0].classList.add("disabled");
-
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[1].classList.remove("disabled");
-                    }
-
+                    this.desativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 } else if (Number(botoesNumber[personagens.number].innerText) === personagens.totalPages) {
-                    botoesPaginacao[1].classList.add("disabled");
-
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[0].classList.remove("disabled");
-                    }
-
+                    this.desativarBotaoProximo(botoesPaginacao);
+                    this.ativarBotaoAnterior(botoesPaginacao);
                 } else {
-                    botoesPaginacao[0].classList.remove("disabled");
-                    botoesPaginacao[1].classList.remove("disabled");
+                    this.ativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 }
 
                 this.preencherTabela(personagens);
@@ -350,44 +346,51 @@ export default class PersonagemController {
         botoesNumber.forEach((botaoNumber: HTMLButtonElement): void => {
             botaoNumber.addEventListener("click", async (event: Event): Promise<void> => {
                 event.preventDefault();
+
                 botoesNumber.forEach((botao: HTMLButtonElement): void => botao.classList.remove("active"));
                 botaoNumber.classList.add("active");
 
                 if (botaoNumber.innerText === "1") {
-                    botoesPaginacao[0].classList.add("disabled");
-
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[1].classList.remove("disabled");
-                    }
-
+                    this.desativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 } else if (Number(botaoNumber.innerText) === (personagens.totalPages)) {
-                    botoesPaginacao[1].classList.add("disabled");
-
-                    if (botoesNumber.length === 2) {
-                        botoesPaginacao[0].classList.remove("disabled");
-                    }
-
+                    this.desativarBotaoProximo(botoesPaginacao);
+                    this.ativarBotaoAnterior(botoesPaginacao);
                 } else {
-                    botoesPaginacao[0].classList.remove("disabled");
-                    botoesPaginacao[1].classList.remove("disabled");
+                    this.ativarBotaoAnterior(botoesPaginacao);
+                    this.ativarBotaoProximo(botoesPaginacao);
                 }
 
                 personagens = await this.findPersonagens(Number(botaoNumber.innerText) - 1);
-
                 this.preencherTabela(personagens);
-
             });
         });
 
         this.preencherTabela(personagens);
     }
 
-    private preencherTabela(personagens: PagePersonagem): void {
+    private preencherTabela(personagens: Page<Personagem>): void {
         let response = '';
         personagens
             .content
             .map((personagem: Personagem): string => response += PersonagemController.criarLinhasTabela(personagem));
         this._corpoTabela.innerHTML = response;
         this.adicionarEventos();
+    }
+
+    private ativarBotaoAnterior(botoesPaginacao: NodeListOf<HTMLButtonElement>): void {
+        botoesPaginacao[0].classList.remove("disabled");
+    }
+
+    private desativarBotaoAnterior(botoesPaginacao: NodeListOf<HTMLButtonElement>): void {
+        botoesPaginacao[0].classList.add("disabled");
+    }
+
+    private ativarBotaoProximo(botoesPaginacao: NodeListOf<HTMLButtonElement>): void {
+        botoesPaginacao[1].classList.remove("disabled");
+    }
+
+    private desativarBotaoProximo(botoesPaginacao: NodeListOf<HTMLButtonElement>): void {
+        botoesPaginacao[1].classList.add("disabled");
     }
 }
