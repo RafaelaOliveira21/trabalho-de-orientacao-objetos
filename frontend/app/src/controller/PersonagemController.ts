@@ -226,13 +226,9 @@ export default class PersonagemController {
             if (!this._filterInput.value) {
                 this.findAll();
             } else {
-                let response = '';
                 const personagens: Page<Personagem> = await this.findPersonagens(0, Number(this._pageSize.value), this._filterInput.value)
-                personagens
-                    .content
-                    .map((personagem: Personagem): string => response += PersonagemController.criarLinhasTabela(personagem));
-
-                this._corpoTabela.innerHTML = response;
+                this.criarPaginacao(personagens);
+                this.paginacaoController(personagens);
             }
         });
     }
@@ -273,15 +269,6 @@ export default class PersonagemController {
                     );
                 });
             });
-    }
-
-    private static filter(personagem: Personagem, valor: string): boolean {
-        return personagem.id === Number(valor)
-            || personagem.arma.toLowerCase().includes(valor)
-            || personagem.nome.toLowerCase().includes(valor)
-            || personagem.tipoElemental.toLowerCase().includes(valor)
-            || personagem.poder.toLowerCase().includes(valor)
-            || personagem.nota === Number(valor);
     }
 
     private criarPaginacao(personagens: Page<Personagem>): void {

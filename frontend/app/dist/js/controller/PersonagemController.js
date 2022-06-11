@@ -38,6 +38,8 @@ export default class PersonagemController {
     async findPersonagens(page, pageSize, filtro) {
         const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
         let url = '';
+        console.log(filtro);
+        console.log(url);
         url = filtro ?
             `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
             : `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`;
@@ -173,12 +175,9 @@ export default class PersonagemController {
                 this.findAll();
             }
             else {
-                let response = '';
                 const personagens = await this.findPersonagens(0, Number(this._pageSize.value), this._filterInput.value);
-                personagens
-                    .content
-                    .map((personagem) => response += PersonagemController.criarLinhasTabela(personagem));
-                this._corpoTabela.innerHTML = response;
+                this.criarPaginacao(personagens);
+                this.paginacaoController(personagens);
             }
         });
     }
@@ -207,14 +206,6 @@ export default class PersonagemController {
                 this.update(tdId.innerText, tdNome.innerText, tdTipoElemental.innerText, tdPoder.innerText, tdArma.innerText, tdNota.innerText);
             });
         });
-    }
-    static filter(personagem, valor) {
-        return personagem.id === Number(valor)
-            || personagem.arma.toLowerCase().includes(valor)
-            || personagem.nome.toLowerCase().includes(valor)
-            || personagem.tipoElemental.toLowerCase().includes(valor)
-            || personagem.poder.toLowerCase().includes(valor)
-            || personagem.nota === Number(valor);
     }
     criarPaginacao(personagens) {
         const botaoAnterior = `<li class="page-item"><button class="page-link controlador">Anterior</button></li>`;
