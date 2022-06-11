@@ -47,10 +47,15 @@ export default class PersonagemController {
             .catch((error: Error): void => alert(error));
     }
 
-    public async findPersonagens(page?: number, pageSize?: number): Promise<Page<Personagem>> {
+    public async findPersonagens(page?: number, pageSize?: number, filtro?: string): Promise<Page<Personagem>> {
         const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
+        let url: string = '';
 
-        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`)
+        url = filtro ?
+            `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
+            : `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`;
+
+        return await fetch(url)
             .then((response: Response): Promise<any> => response.json())
             .catch((error) => alert("Erro: " + error));
     }
@@ -216,20 +221,19 @@ export default class PersonagemController {
     }
 
     public filtrarTabela(): void {
-        this._filterInput.addEventListener("keyup", (event: Event): void => {
+        this._filterInput.addEventListener("keyup", async (event: Event): Promise<void> => {
             event.preventDefault();
 
-            let response = '';
-            JSON.parse(<string>localStorage.getItem("personagens"))
-                .filter((personagem: Personagem): boolean => PersonagemController.filter(personagem, this._filterInput.value))
-                .map((personagem: Personagem): string => response += PersonagemController.criarLinhasTabela(personagem));
-
-            this._corpoTabela.innerHTML = response;
-        });
-
-        this._filterInput.addEventListener("blur", (event: Event): void => {
             if (!this._filterInput.value) {
                 this.findAll();
+            } else {
+                let response = '';
+                const personagens: Page<Personagem> = await this.findPersonagens(0, Number(this._pageSize.value), this._filterInput.value)
+                personagens
+                    .content
+                    .map((personagem: Personagem): string => response += PersonagemController.criarLinhasTabela(personagem));
+
+                this._corpoTabela.innerHTML = response;
             }
         });
     }

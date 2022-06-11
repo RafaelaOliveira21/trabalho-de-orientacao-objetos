@@ -35,4 +35,29 @@ public class PersonagemDto {
                 .build();
     }
 
+    public static boolean filter(PersonagemDto personagem, String filtro) {
+        return String
+                .valueOf(personagem.id)
+                .toUpperCase()
+                .contains(filtro)
+                || String
+                .valueOf(personagem.arma)
+                .replace("LANCA", "LANÇA")
+                .toUpperCase()
+                .contains(filtro)
+                || personagem.nome
+                .toUpperCase()
+                .contains(filtro)
+                || String
+                .valueOf(personagem.tipoElemental)
+                .replace("_", " ")
+                .toUpperCase()
+                .contains(filtro)
+                || personagem.poder
+                .toUpperCase()
+                .contains(filtro)
+                || String
+                .valueOf(personagem.nota).toUpperCase().contains(filtro);
+    }
+
 }

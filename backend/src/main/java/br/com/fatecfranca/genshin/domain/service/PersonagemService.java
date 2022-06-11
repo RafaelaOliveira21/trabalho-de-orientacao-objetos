@@ -24,6 +24,13 @@ public class PersonagemService {
                 .map(PersonagemDto::of);
     }
 
+    public List<PersonagemDto> findAll() {
+        return personagemRepository.findAll()
+                .stream()
+                .map(PersonagemDto::of)
+                .collect(Collectors.toList());
+    }
+
     public PersonagemDto findById(Long id) {
         return PersonagemDto.of(findOrThrowException(id));
     }

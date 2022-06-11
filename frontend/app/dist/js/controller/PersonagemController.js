@@ -35,9 +35,13 @@ export default class PersonagemController {
         })
             .catch((error) => alert(error));
     }
-    async findPersonagens(page, pageSize) {
+    async findPersonagens(page, pageSize, filtro) {
         const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
-        return await fetch(`${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`)
+        let url = '';
+        url = filtro ?
+            `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
+            : `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`;
+        return await fetch(url)
             .then((response) => response.json())
             .catch((error) => alert("Erro: " + error));
     }
@@ -164,17 +168,18 @@ export default class PersonagemController {
         this._tiposElementaisSelect.selectedIndex = 0;
     }
     filtrarTabela() {
-        this._filterInput.addEventListener("keyup", (event) => {
+        this._filterInput.addEventListener("keyup", async (event) => {
             event.preventDefault();
-            let response = '';
-            JSON.parse(localStorage.getItem("personagens"))
-                .filter((personagem) => PersonagemController.filter(personagem, this._filterInput.value))
-                .map((personagem) => response += PersonagemController.criarLinhasTabela(personagem));
-            this._corpoTabela.innerHTML = response;
-        });
-        this._filterInput.addEventListener("blur", (event) => {
             if (!this._filterInput.value) {
                 this.findAll();
+            }
+            else {
+                let response = '';
+                const personagens = await this.findPersonagens(0, Number(this._pageSize.value), this._filterInput.value);
+                personagens
+                    .content
+                    .map((personagem) => response += PersonagemController.criarLinhasTabela(personagem));
+                this._corpoTabela.innerHTML = response;
             }
         });
     }
