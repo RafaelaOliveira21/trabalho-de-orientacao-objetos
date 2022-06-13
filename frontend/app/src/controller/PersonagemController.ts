@@ -386,4 +386,5 @@ export default class PersonagemController {
     private desativarBotaoProximo(botoesPaginacao: NodeListOf<HTMLButtonElement>): void {
         botoesPaginacao[1].classList.add("disabled");
     }
+    
 }
