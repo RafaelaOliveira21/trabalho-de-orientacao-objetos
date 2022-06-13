@@ -16,32 +16,13 @@ export default class PersonagemController {
     _filterInput;
     constructor() {
         this.preencherCampos();
-        fetch(this._urlArmas)
-            .then((response) => response.json())
-            .then((armas) => {
-            armas
-                .forEach((arma) => {
-                this._armasSelect.options[this._armasSelect.options.length] = new Option(PersonagemController.removerAspas(PersonagemController.formatarNomeArma(arma)), arma);
-            });
-        })
-            .catch((error) => alert(error));
-        fetch(this._urlTiposElementais)
-            .then((response) => response.json())
-            .then((tiposElementais) => {
-            tiposElementais
-                .forEach((tipoElemental) => {
-                this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = new Option(PersonagemController.removerAspas(tipoElemental), tipoElemental);
-            });
-        })
-            .catch((error) => alert(error));
+        this.criarOptions();
     }
     async findPersonagens(page, pageSize, filtro) {
         const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
         let url = '';
-        console.log(filtro);
-        console.log(url);
-        url = filtro ?
-            `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
+        url = filtro
+            ? `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
             : `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`;
         return await fetch(url)
             .then((response) => response.json())
@@ -159,6 +140,26 @@ export default class PersonagemController {
         this._pageSize = document.getElementById("pageSize");
         this._filterInput = document.getElementById("filter");
         this._paginacao = document.getElementById("pagination");
+    }
+    criarOptions() {
+        fetch(this._urlArmas)
+            .then((response) => response.json())
+            .then((armas) => {
+            armas
+                .forEach((arma) => {
+                this._armasSelect.options[this._armasSelect.options.length] = new Option(PersonagemController.removerAspas(PersonagemController.formatarNomeArma(arma)), arma);
+            });
+        })
+            .catch((error) => alert(error));
+        fetch(this._urlTiposElementais)
+            .then((response) => response.json())
+            .then((tiposElementais) => {
+            tiposElementais
+                .forEach((tipoElemental) => {
+                this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = new Option(PersonagemController.removerAspas(tipoElemental), tipoElemental);
+            });
+        })
+            .catch((error) => alert(error));
     }
     limparCampos() {
         this._idInput.value = "";

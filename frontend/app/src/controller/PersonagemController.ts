@@ -19,40 +19,15 @@ export default class PersonagemController {
 
     constructor() {
         this.preencherCampos();
-
-        fetch(this._urlArmas)
-            .then((response: Response): Promise<any> => response.json())
-            .then((armas: Array<string>): void => {
-                armas
-                    .forEach((arma: string): void => {
-                        this._armasSelect.options[this._armasSelect.options.length] = new Option(
-                            PersonagemController.removerAspas(PersonagemController.formatarNomeArma(arma)),
-                            arma
-                        );
-                    });
-            })
-            .catch((error: Error): void => alert(error));
-
-        fetch(this._urlTiposElementais)
-            .then((response: Response): Promise<any> => response.json())
-            .then((tiposElementais: Array<string>): void => {
-                tiposElementais
-                    .forEach((tipoElemental: string): void => {
-                        this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = new Option(
-                            PersonagemController.removerAspas(tipoElemental),
-                            tipoElemental
-                        );
-                    });
-            })
-            .catch((error: Error): void => alert(error));
+        this.criarOptions();
     }
 
     public async findPersonagens(page?: number, pageSize?: number, filtro?: string): Promise<Page<Personagem>> {
         const size = Number(this._pageSize.options[this._pageSize.selectedIndex].value);
         let url: string = '';
 
-        url = filtro ?
-            `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
+        url = filtro
+            ? `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc&filtro=${filtro}`
             : `${PersonagemController.getUrl()}?page=${page ? page : 0}&size=${pageSize ? pageSize : size}&sort=id,asc`;
 
         return await fetch(url)
@@ -208,6 +183,34 @@ export default class PersonagemController {
         this._pageSize = <HTMLSelectElement>document.getElementById("pageSize");
         this._filterInput = <HTMLInputElement>document.getElementById("filter");
         this._paginacao = <HTMLUListElement>document.getElementById("pagination");
+    }
+
+    private criarOptions(): void {
+        fetch(this._urlArmas)
+            .then((response: Response): Promise<any> => response.json())
+            .then((armas: Array<string>): void => {
+                armas
+                    .forEach((arma: string): void => {
+                        this._armasSelect.options[this._armasSelect.options.length] = new Option(
+                            PersonagemController.removerAspas(PersonagemController.formatarNomeArma(arma)),
+                            arma
+                        );
+                    });
+            })
+            .catch((error: Error): void => alert(error));
+
+        fetch(this._urlTiposElementais)
+            .then((response: Response): Promise<any> => response.json())
+            .then((tiposElementais: Array<string>): void => {
+                tiposElementais
+                    .forEach((tipoElemental: string): void => {
+                        this._tiposElementaisSelect.options[this._tiposElementaisSelect.options.length] = new Option(
+                            PersonagemController.removerAspas(tipoElemental),
+                            tipoElemental
+                        );
+                    });
+            })
+            .catch((error: Error): void => alert(error));
     }
 
     public limparCampos(): void {
